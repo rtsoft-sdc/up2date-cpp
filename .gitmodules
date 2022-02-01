@@ -1,0 +1,3 @@
+[submodule "hawkbit/submodules/rapidjson"]
+	path = hawkbit/submodules/rapidjson
+	url = https://github.com/Tencent/rapidjson.git
