@@ -27,7 +27,7 @@ docker run --rm -v "%cd%/client.conf:/opt/client.conf" rtsoft/up2date_cpp:latest
 ## BUILDING CUSTOMIZED CLIENT
 
 ```shell   
-git clone --recurse-submodules https://.../hawkbit-cpp.git
+git clone --recurse-submodules https://github.com/rtsoft-gmbh/up2date-cpp.git
 ```
 
 > *Did you just check out / clone a repository and forget `--recursive / --recurse-submodules` ? Well, do this:*
