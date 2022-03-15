@@ -34,11 +34,17 @@ fi
 
 certificate=$(sed -z 's/\n/\\n/g' < "$c")
 
+info=`docker run -it --rm -v "$(realpath ${c})":/home/step/certs/data.crt smallstep/step-cli step certificate inspect --format json certs/data.crt`
+issuer=`echo ${info} | jq -r .issuer.common_name[0] | tr -d '\n'`
+controller=`echo ${info} | jq -r .subject.common_name[0] | tr -d '\n'`
+
 cat << EOF
 {
   "x_apig_token": "${x}",
   "provisioning_endpoint": "${p}",
-  "certificate": "${certificate}"
+  "certificate": "${certificate}",
+  "tenant": "${issuer}",
+  "controllerId": "${controller}"
 }
 EOF
 

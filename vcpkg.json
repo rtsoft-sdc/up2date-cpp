@@ -1,0 +1,11 @@
+{
+  "name": "up2date-cpp",
+  "version-string": "0.0.1",
+  "dependencies": [
+    "rapidjson"
+  ],
+  "builtin-baseline": "b86c0c35b88e2bf3557ff49dc831689c2f085090",
+  "overrides": [
+    { "name": "rapidjson", "version": "2020-09-14#2" }
+  ]
+}
