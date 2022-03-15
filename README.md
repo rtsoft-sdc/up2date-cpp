@@ -27,15 +27,20 @@ docker run --rm -v "%cd%/client.conf:/opt/client.conf" rtsoft/up2date_cpp:latest
 ## BUILDING CUSTOMIZED CLIENT
 
 ```shell   
-git clone --recurse-submodules https://github.com/rtsoft-gmbh/up2date-cpp.git
-```
-
-> *Did you just check out / clone a repository and forget `--recursive / --recurse-submodules` ? Well, do this:*
-```shell   
-git submodule update --init --recursive
+git clone https://github.com/rtsoft-gmbh/up2date-cpp.git
 ```
 
 > ***Use [Visual Studio Code Remote-Containers](README-vscode.md) to build and develop in dedicated pre-configured contanerized environment.*** 
+
+### Install on working environment
+[Install vcpkg](https://github.com/microsoft/vcpkg#getting-started).
+```shell 
+cd up2date-cpp 
+[path to vcpkg]/vcpkg install
+mkdir build
+cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=[path to vcpkg]/scripts/buildsystems/vcpkg.cmake
+cd build && make
+```
 
 ## CONFIGURATION
 
