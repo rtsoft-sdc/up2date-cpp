@@ -8,8 +8,6 @@ SYSTEM REQUIREMENTS:
 
 ```F1: Remote-Containers: Reopen in Container```
 
-```vcpkg install```
-
 ```F1: CMake: Configure```
 
 ```F1: CMake: Build```
