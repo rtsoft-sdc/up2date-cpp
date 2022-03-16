@@ -131,7 +131,7 @@ int main() {
     std::string crt((std::istreambuf_iterator<char>(t)),
                     std::istreambuf_iterator<char>());
 
-    auto builder = ClientBuilder::newInstance();
+    auto builder = ProvisioningClientBuilder::newInstance();
     builder->setCrt(crt)->setProvisioningEndpoint(std::string(provisioningEndpoint))
             ->setEventHandler(std::shared_ptr<EventHandler>(new Handler()))
             ->addProvisioningHeader("X-Apig-AppCode", std::string(xApigToken))

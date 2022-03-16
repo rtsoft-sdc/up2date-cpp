@@ -4,41 +4,41 @@
 #include "provisioning_client_impl.hpp"
 
 namespace hawkbit {
-    std::unique_ptr<ClientBuilder> ClientBuilder::newInstance() {
-        return std::unique_ptr<ClientBuilder>(new ProvisioningClientBuilderImpl());
+    std::unique_ptr<ProvisioningClientBuilder> ProvisioningClientBuilder::newInstance() {
+        return std::unique_ptr<ProvisioningClientBuilder>(new ProvisioningClientBuilderImpl());
     }
 
-    ClientBuilder *ProvisioningClientBuilderImpl::setCrt(const std::string& root_) {
+    ProvisioningClientBuilder *ProvisioningClientBuilderImpl::setCrt(const std::string& root_) {
         crt = root_;
 
         return this;
     }
 
-    ClientBuilder *ProvisioningClientBuilderImpl::setProvisioningEndpoint(const std::string& provisioningEndpoint_) {
+    ProvisioningClientBuilder *ProvisioningClientBuilderImpl::setProvisioningEndpoint(const std::string& provisioningEndpoint_) {
         provisioningURI = uri::URI::fromString(provisioningEndpoint_);
 
         return this;
     }
 
-    ClientBuilder *ProvisioningClientBuilderImpl::setDefaultPollingTimeout(int pollingTimeout_) {
+    ProvisioningClientBuilder *ProvisioningClientBuilderImpl::setDefaultPollingTimeout(int pollingTimeout_) {
         pollingTimeout = pollingTimeout_;
 
         return this;
     }
 
-    ClientBuilder *ProvisioningClientBuilderImpl::setEventHandler(std::shared_ptr<EventHandler> handler_) {
+    ProvisioningClientBuilder *ProvisioningClientBuilderImpl::setEventHandler(std::shared_ptr<EventHandler> handler_) {
         handler = handler_;
 
         return this;
     }
 
-    ClientBuilder *ProvisioningClientBuilderImpl::addHeader(const std::string &key, const std::string &value) {
+    ProvisioningClientBuilder *ProvisioningClientBuilderImpl::addHeader(const std::string &key, const std::string &value) {
         defaultHeaders.insert({key, value});
 
         return this;
     }
 
-    ClientBuilder *
+    ProvisioningClientBuilder *
     ProvisioningClientBuilderImpl::addProvisioningHeader(const std::string &key, const std::string &value) {
         provisioningHeaders.insert({key, value});
 

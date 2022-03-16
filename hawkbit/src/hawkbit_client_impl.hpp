@@ -22,6 +22,7 @@ namespace hawkbit {
         int defaultSleepTime;
         int currentSleepTime;
         bool ignoreSleep;
+        bool serverCertificateVerify = true;
 
         // starting hawkbit communication logic.
         //  returns execute time in ms
@@ -50,6 +51,48 @@ namespace hawkbit {
         std::string getBody(uri::URI uri) override;
 
         void downloadWithReceiver(uri::URI uri, std::function<bool(const char *, size_t)> function) override;
+
+        friend class DefaultClientBuilderImpl;
+    };
+
+    class DefaultClientBuilderImpl: public DefaultClientBuilder{
+        uri::URI hawkbitUri;
+        int pollingTimeout = 30000;
+        std::shared_ptr<EventHandler> handler;
+        httplib::Headers defaultHeaders;
+        bool verifyServerCertificate = true;
+        std::string tenant = "default";
+        std::string controllerId;
+
+        enum AuthorizeVariants {
+            NOT_SET,
+            GATEWAY_TOKEN,
+            DEVICE_TOKEN
+        };
+
+        AuthorizeVariants currentVariant = AuthorizeVariants::NOT_SET;
+
+    public:
+        DefaultClientBuilder *setHawkbitEndpoint(const std::string &) override;
+
+        DefaultClientBuilder *setDefaultPollingTimeout(int pollingTimeout_) override;
+
+        DefaultClientBuilder *setEventHandler(std::shared_ptr<EventHandler> handler) override;
+
+        DefaultClientBuilder *addHeader(const std::string &, const std::string &) override;
+
+        DefaultClientBuilder *setGatewayToken(const std::string &) override;
+
+        DefaultClientBuilder *setDeviceToken(const std::string &) override;
+
+        DefaultClientBuilder *notVerifyServerCertificate() override;
+
+        DefaultClientBuilder *setTenant(const std::string &) override;
+
+        DefaultClientBuilder *setControllerId(const std::string &) override;
+
+        std::unique_ptr<Client> build() override;
+
     };
 
 }

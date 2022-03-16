@@ -30,7 +30,7 @@ namespace hawkbit {
 
     };
 
-    class ProvisioningClientBuilderImpl: public ClientBuilder {
+    class ProvisioningClientBuilderImpl: public ProvisioningClientBuilder {
         std::string crt;
         uri::URI provisioningURI;
         int pollingTimeout = 30000;
@@ -40,19 +40,19 @@ namespace hawkbit {
 
 
     public:
-        ClientBuilder *setCrt(const std::string&root_) override;
+        ProvisioningClientBuilder *setCrt(const std::string&root_) override;
 
-        ClientBuilder *setProvisioningEndpoint(const std::string& provisioningEndpoint_) override;
+        ProvisioningClientBuilder *setProvisioningEndpoint(const std::string& provisioningEndpoint_) override;
 
-        ClientBuilder *setDefaultPollingTimeout(int pollingTimeout_) override;
+        ProvisioningClientBuilder *setDefaultPollingTimeout(int pollingTimeout_) override;
 
-        ClientBuilder *setEventHandler(std::shared_ptr<EventHandler> handler) override;
+        ProvisioningClientBuilder *setEventHandler(std::shared_ptr<EventHandler> handler) override;
 
-        ClientBuilder *addHeader(const std::string &string, const std::string &string1) override;
+        ProvisioningClientBuilder *addHeader(const std::string &string, const std::string &string1) override;
 
         std::unique_ptr<Client> build() override;
 
-        ClientBuilder *addProvisioningHeader(const std::string &string, const std::string &string1) override;
+        ProvisioningClientBuilder *addProvisioningHeader(const std::string &string, const std::string &string1) override;
 
     };
 }

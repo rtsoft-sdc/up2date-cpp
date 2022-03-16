@@ -33,8 +33,10 @@ namespace hawkbit {
     }
 
     httplib::Client HawkbitCommunicationClient::newHttpClient(uri::URI &hostEndpoint) {
+        auto cli = httplib::Client(hostEndpoint.getScheme() + "://" + hostEndpoint.getAuthority());
+        cli.enable_server_certificate_verification(serverCertificateVerify);
 
-        return httplib::Client(hostEndpoint.getScheme() + "://" + hostEndpoint.getAuthority());
+        return cli;
     }
 
     // set actionId here (hawkbit api requires it but in docs not)
