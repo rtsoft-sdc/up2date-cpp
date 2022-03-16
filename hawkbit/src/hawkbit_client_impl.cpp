@@ -37,7 +37,8 @@ namespace hawkbit {
         return httplib::Client(hostEndpoint.getScheme() + "://" + hostEndpoint.getAuthority());
     }
 
-    void fillResponseDocument(Response *response, rapidjson::Document &document) {
+    // set actionId here (hawkbit api requires it but in docs not)
+    void fillResponseDocument(Response *response, rapidjson::Document &document, int actionId) {
         if (response == nullptr) {
             throw wrong_response();
         }
@@ -57,6 +58,10 @@ namespace hawkbit {
         status.AddMember("details", details, document.GetAllocator());
 
         document.AddMember("status", status, document.GetAllocator());
+
+        if (actionId >= 0) {
+            document.AddMember("id", std::to_string(actionId), document.GetAllocator());
+        }
     }
 
     void HawkbitCommunicationClient::followConfigData(uri::URI &followURI) {
@@ -81,7 +86,7 @@ namespace hawkbit {
         auto builder = ResponseBuilder::newInstance();
         auto resp = builder->setFinished(Response::SUCCESS)->setExecution(Response::CLOSED)->build();
 
-        fillResponseDocument(resp.get(), document);
+        fillResponseDocument(resp.get(), document, -1);
 
         rapidjson::StringBuffer buf;
         rapidjson::Writer<rapidjson::StringBuffer> writer(buf);
@@ -110,12 +115,14 @@ namespace hawkbit {
             return cli.Get(followURI.getPath().c_str(), defaultHeaders);
         });
 
-        auto cliResp = handler->onCancelAction(CancelAction_::fromString(resp->body));
+        auto cancelAction = CancelAction_::fromString(resp->body);
+        auto actionId = cancelAction->getId();
+        auto cliResp = handler->onCancelAction(std::move(cancelAction));
 
         rapidjson::Document document;
         document.SetObject();
 
-        fillResponseDocument(cliResp.get(), document);
+        fillResponseDocument(cliResp.get(), document, actionId);
 
         rapidjson::StringBuffer buf;
         rapidjson::Writer<rapidjson::StringBuffer> writer(buf);
@@ -146,11 +153,13 @@ namespace hawkbit {
             return cli.Get(followURI.getPath().c_str(), defaultHeaders);
         });
 
-        auto cliResp = handler->onDeploymentAction(DeploymentBase_::from(resp->body, this));
+        auto deploymentBase = DeploymentBase_::from(resp->body, this);
+        auto actionId = deploymentBase->getId();
+        auto cliResp = handler->onDeploymentAction(std::move(deploymentBase));
 
         rapidjson::Document document;
         document.SetObject();
-        fillResponseDocument(cliResp.get(), document);
+        fillResponseDocument(cliResp.get(), document, actionId);
 
         rapidjson::StringBuffer buf;
         rapidjson::Writer<rapidjson::StringBuffer> writer(buf);
