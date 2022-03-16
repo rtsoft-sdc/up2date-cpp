@@ -4,15 +4,10 @@
 ARG VARIANT="bullseye"
 FROM mcr.microsoft.com/vscode/devcontainers/cpp:0-${VARIANT}
 
-ENV VCPKG_ROOT /usr/vcpkg
+ENV VCPKG_ROOT /usr/local/vcpkg
 
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
      && apt-get -y install --no-install-recommends libssl-dev
-
-RUN git clone https://github.com/Microsoft/vcpkg ${VCPKG_ROOT} \
-    && cd ${VCPKG_ROOT} \
-    && git reset --hard c6a4ed75f03a7485cf6fc91794809cd73f8f5aeb \
-    && ./bootstrap-vcpkg.sh
 
 ENV PATH "${VCPKG_ROOT}:${PATH}"
 
