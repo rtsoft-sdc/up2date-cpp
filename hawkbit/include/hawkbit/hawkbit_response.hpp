@@ -33,7 +33,7 @@ namespace hawkbit {
 
         static std::string executionToString(const Execution &);
 
-        virtual  Finished getFinished() = 0;
+        virtual Finished getFinished() = 0;
 
         virtual Execution getExecution() = 0;
 

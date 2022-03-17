@@ -19,6 +19,17 @@ namespace hawkbit {
         return this;
     }
 
+    DefaultClientBuilder *DefaultClientBuilderImpl::setHawkbitEndpoint(const std::string &endpoint,
+                                                                       const std::string &controllerId_,
+                                                                       const std::string &tenant_) {
+        auto hawkbitEndpoint = uri::URI::fromString(endpoint);
+        this->hawkbitUri = uri::URI::fromString(
+                hawkbitEndpoint.getScheme() + "://" + hawkbitEndpoint.getAuthority() + "/" + tenant_ + "/controller/v1/" +
+                controllerId_);
+
+        return this;
+    }
+
     DefaultClientBuilder *DefaultClientBuilderImpl::setDefaultPollingTimeout(int pollingTimeout_) {
         pollingTimeout = pollingTimeout_;
 
@@ -31,24 +42,35 @@ namespace hawkbit {
         return this;
     }
 
-    DefaultClientBuilder *DefaultClientBuilderImpl::setGatewayToken(const std::string &token) {
-        if (currentVariant != AuthorizeVariants::NOT_SET) {
+    DefaultClientBuilder *DefaultClientBuilderImpl::setGatewayToken(const std::string &token_) {
+        if (authVariant != AuthorizeVariants::NOT_SET) {
             throw std::runtime_error("Another authority type is already set");
         }
 
-        addHeader("Authorization", "GatewayToken " + token);
-        currentVariant = AuthorizeVariants::GATEWAY_TOKEN;
+        token = token_;
+        authVariant = AuthorizeVariants::GATEWAY_TOKEN;
 
         return this;
     }
 
-    DefaultClientBuilder *DefaultClientBuilderImpl::setDeviceToken(const std::string &token) {
-        if (currentVariant != AuthorizeVariants::NOT_SET) {
+    DefaultClientBuilder *DefaultClientBuilderImpl::setDeviceToken(const std::string &token_) {
+        if (authVariant != AuthorizeVariants::NOT_SET) {
             throw std::runtime_error("Another authority type is already set");
         }
 
-        addHeader("Authorization", "TargetToken " + token);
-        currentVariant = AuthorizeVariants::DEVICE_TOKEN;
+        token = token_;
+        authVariant = AuthorizeVariants::DEVICE_TOKEN;
+
+        return this;
+    }
+
+    DefaultClientBuilder *DefaultClientBuilderImpl::setTLS(const std::string &crt_, const std::string &key_) {
+        if (authVariant != AuthorizeVariants::NOT_SET) {
+            throw std::runtime_error("Another authority type is already set");
+        }
+        crt = crt_;
+        key = key_;
+        authVariant = AuthorizeVariants::M_TLS_KEYPAIR;
 
         return this;
     }
@@ -59,14 +81,9 @@ namespace hawkbit {
         return this;
     }
 
-    DefaultClientBuilder *DefaultClientBuilderImpl::setTenant(const std::string &tenant_) {
-        tenant = tenant_;
 
-        return this;
-    }
-
-    DefaultClientBuilder *DefaultClientBuilderImpl::setControllerId(const std::string &controllerId_) {
-        controllerId = controllerId_;
+    DefaultClientBuilder *DefaultClientBuilderImpl::setAuthErrorHandler(std::shared_ptr<AuthErrorHandler> e) {
+        authErrorHandler = e;
 
         return this;
     }
@@ -75,18 +92,23 @@ namespace hawkbit {
         auto cli = new HawkbitCommunicationClient();
         auto cliPtr = std::unique_ptr<Client>(cli);
 
-        auto requestUri =
-                hawkbitUri.getScheme() + "://" + hawkbitUri.getAuthority() + "/" + tenant + "/controller/v1/" +
-                controllerId;
-
-        cli->hawkbitURI = uri::URI::fromString(requestUri);
+        cli->hawkbitURI = hawkbitUri;
         cli->defaultSleepTime = pollingTimeout;
         cli->currentSleepTime = pollingTimeout;
         cli->handler = handler;
         cli->defaultHeaders = defaultHeaders;
-        cli->defaultHeaders = defaultHeaders;
         cli->serverCertificateVerify = verifyServerCertificate;
+        cli->authErrorHandler = authErrorHandler;
+
+        if (authVariant == AuthorizeVariants::M_TLS_KEYPAIR) {
+            cli->setTLS(crt, key);
+        } else if (authVariant == AuthorizeVariants::GATEWAY_TOKEN) {
+            cli->setGatewayToken(token);
+        } else if (authVariant == AuthorizeVariants::DEVICE_TOKEN) {
+            cli->setDeviceToken(token);
+        }
 
         return cliPtr;
     }
+
 }

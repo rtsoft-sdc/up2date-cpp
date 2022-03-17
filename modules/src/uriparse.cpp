@@ -74,4 +74,8 @@ namespace uri {
         return retUri;
     }
 
+    bool URI::isEmpty() {
+        return scheme.empty() || authority.empty();
+    }
+
 }

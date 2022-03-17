@@ -15,7 +15,7 @@ namespace hawkbit {
         return stopId;
     }
 
-    std::unique_ptr<CancelAction> CancelAction_::fromString(const std::string& body) {
+    std::unique_ptr<CancelAction> CancelAction_::fromString(const std::string &body) {
         rapidjson::Document document;
         document.Parse<0>(body.c_str());
 
@@ -48,8 +48,8 @@ namespace hawkbit {
             throw unexpected_payload();
 
         if (!document.HasMember("id") || !document.HasMember("deployment") ||
-                !document["deployment"].HasMember("update") || !document["deployment"].HasMember("download")
-                || !document["deployment"].HasMember("chunks")) {
+            !document["deployment"].HasMember("update") || !document["deployment"].HasMember("download")
+            || !document["deployment"].HasMember("chunks")) {
             throw unexpected_payload();
         }
 
@@ -68,9 +68,9 @@ namespace hawkbit {
             deploymentBase->inMaintenanceWindow = true;
         }
 
-        const rapidjson::Value& chunks_ = document["deployment"]["chunks"];
+        const rapidjson::Value &chunks_ = document["deployment"]["chunks"];
         for (rapidjson::Value::ConstValueIterator itr = chunks_.Begin(); itr != chunks_.End(); ++itr) {
-            const rapidjson::Value& chunk = *itr;
+            const rapidjson::Value &chunk = *itr;
             if (!chunk.HasMember("part") || !chunk.HasMember("version") || !chunk.HasMember("name")
                 || !chunk.HasMember("artifacts")) {
                 throw unexpected_payload();
@@ -83,17 +83,17 @@ namespace hawkbit {
             chunkR->version = chunk["version"].GetString();
             chunkR->part = chunk["part"].GetString();
 
-            const rapidjson::Value& artifacts_ = chunk["artifacts"];
+            const rapidjson::Value &artifacts_ = chunk["artifacts"];
             for (rapidjson::Value::ConstValueIterator itr_a = artifacts_.Begin(); itr_a != artifacts_.End(); ++itr_a) {
-                const rapidjson::Value& artifact = *itr_a;
+                const rapidjson::Value &artifact = *itr_a;
                 if (!artifact.HasMember("filename") || !artifact.HasMember("hashes") || !artifact.HasMember("size")
-                        || !artifact.HasMember("_links") || !artifact["hashes"].HasMember("sha256")
-                        || !artifact["hashes"].HasMember("sha1") || !artifact["hashes"].HasMember("md5")
-                        || !artifact["_links"].HasMember("download-http")) {
+                    || !artifact.HasMember("_links") || !artifact["hashes"].HasMember("sha256")
+                    || !artifact["hashes"].HasMember("sha1") || !artifact["hashes"].HasMember("md5")
+                    || !artifact["_links"].HasMember("download-http")) {
                     throw unexpected_payload();
                 }
                 Hashes hashesR;
-                auto artifactR =  new Artifact_();
+                auto artifactR = new Artifact_();
                 auto artifactPtr = std::shared_ptr<Artifact>(artifactR);
                 artifactR->filename = artifact["filename"].GetString();
                 artifactR->fileSize = artifact["size"].GetInt();
@@ -111,7 +111,6 @@ namespace hawkbit {
         }
         return retBase;
     }
-
 
 
     int DeploymentBase_::getId() {

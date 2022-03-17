@@ -1,7 +1,3 @@
-project(hawkbit_example_cli)
+project(example)
 
-add_executable(${PROJECT_NAME} main.cpp)
-
-target_link_libraries(${PROJECT_NAME}
-    sub::hawkbit
-)
+add_subdirectory(simple_client)

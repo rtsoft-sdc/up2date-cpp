@@ -49,7 +49,7 @@ namespace hawkbit {
     // used for get httpClient and its Headers
     class DownloadProvider {
     public:
-        virtual void downloadTo(uri::URI, const std::string&) = 0;
+        virtual void downloadTo(uri::URI, const std::string &) = 0;
 
         // get file as string
         virtual std::string getBody(uri::URI) = 0;

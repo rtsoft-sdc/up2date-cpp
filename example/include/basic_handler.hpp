@@ -5,10 +5,6 @@
 
 using namespace hawkbit;
 
-const char *AUTH_CERT_PATH_ENV_NAME = "CERT_PATH";
-const char *PROVISIONING_ENDPOINT_ENV_NAME = "PROVISIONING_ENDPOINT";
-const char *X_APIG_TOKEN_ENV_NAME = "X_APIG_TOKEN";
-
 class CancelActionFeedbackDeliveryListener : public ResponseDeliveryListener {
 public:
     void onSuccessfulDelivery() override {
@@ -114,26 +110,4 @@ char *getEnvOrExit(const char *name) {
         exit(2);
     }
     return env;
-}
-
-int main() {
-    std::cout << "hawkBit-cpp client started..." << std::endl;
-
-    auto clientCertificatePath = getEnvOrExit(AUTH_CERT_PATH_ENV_NAME);
-    auto provisioningEndpoint = getEnvOrExit(PROVISIONING_ENDPOINT_ENV_NAME);
-    // special variable for cloud
-    auto xApigToken = getEnvOrExit(X_APIG_TOKEN_ENV_NAME);
-
-    std::ifstream t((std::string(clientCertificatePath)));
-    if (!t.is_open()) {
-        std::cout << "File " << clientCertificatePath << " not exists" << std::endl;
-    }
-    std::string crt((std::istreambuf_iterator<char>(t)),
-                    std::istreambuf_iterator<char>());
-
-    auto builder = ProvisioningClientBuilder::newInstance();
-    builder->setCrt(crt)->setProvisioningEndpoint(std::string(provisioningEndpoint))
-            ->setEventHandler(std::shared_ptr<EventHandler>(new Handler()))
-            ->addProvisioningHeader("X-Apig-AppCode", std::string(xApigToken))
-            ->build()->run();
 }

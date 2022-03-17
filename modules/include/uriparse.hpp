@@ -11,6 +11,8 @@ namespace uri {
         std::string fragment;
 
     public:
+        bool isEmpty();
+
         bool hasPath();
 
         bool hasQuery();

@@ -46,12 +46,26 @@ namespace hawkbit {
         }
     };
 
-    class http_lib_error: public std::exception {
+    class http_lib_error : public std::exception {
         std::string message;
     public:
-        http_lib_error(int error_num) {
+        explicit http_lib_error(int error_num) {
             message = "HTTP request error. Error code " + std::to_string(error_num);
         }
+
+        const char *what() const noexcept override {
+            return message.c_str();
+        }
+    };
+
+    // to catch and handle with on auth error handler
+    class client_initialize_error : public std::exception {
+        std::string message;
+    public:
+        explicit client_initialize_error(const std::string &msg) {
+            message = "Client not initialized properly: " + msg;
+        }
+
         const char *what() const noexcept override {
             return message.c_str();
         }

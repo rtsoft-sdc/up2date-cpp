@@ -1,6 +1,7 @@
 #include <chrono>
 #include <thread>
 #include <string>
+#include <utility>
 
 #define RAPIDJSON_HAS_STDSTRING 1
 
@@ -15,6 +16,11 @@
 
 
 namespace hawkbit {
+
+    const char *AUTHORIZATION_HEADER = "Authorization";
+    const char *GATEWAY_TOKEN_HEADER = "GatewayToken";
+    const char *TARGET_TOKEN_HEADER = "TargetToken";
+
     void checkHttpCode(int presented, int expected) {
         if (presented == HTTP_UNAUTHORIZED)
             throw unauthorized_exception();
@@ -32,7 +38,28 @@ namespace hawkbit {
         }
     }
 
-    httplib::Client HawkbitCommunicationClient::newHttpClient(uri::URI &hostEndpoint) {
+    httplib::Client HawkbitCommunicationClient::newHttpClient(uri::URI &hostEndpoint) const {
+        if (hostEndpoint.isEmpty() || !hostEndpoint.hasPath()) {
+            throw client_initialize_error("endpoint has bad format");
+        }
+
+        // key pair auth
+        if (mTLSKeypair.isSet) {
+            BIO *bio_crt = BIO_new(BIO_s_mem());
+            BIO_puts(bio_crt, mTLSKeypair.crt.c_str());
+            X509 *certificate = PEM_read_bio_X509(bio_crt, nullptr, nullptr, nullptr);
+            BIO_free(bio_crt);
+
+            BIO *bio_key = BIO_new(BIO_s_mem());
+            BIO_puts(bio_key, mTLSKeypair.key.c_str());
+            EVP_PKEY *key = PEM_read_bio_PrivateKey(bio_key, nullptr, nullptr, nullptr);
+            BIO_free(bio_key);
+
+
+            return httplib::Client(hostEndpoint.getScheme() + "://" + hostEndpoint.getAuthority(),
+                                   certificate, key);
+        }
+
         auto cli = httplib::Client(hostEndpoint.getScheme() + "://" + hostEndpoint.getAuthority());
         cli.enable_server_certificate_verification(serverCertificateVerify);
 
@@ -95,7 +122,7 @@ namespace hawkbit {
         document.Accept(writer);
 
         retryHandler(followURI, [&](httplib::Client &cli) {
-            return cli.Put(followURI.getPath().c_str(),defaultHeaders, buf.GetString(), "application/json");
+            return cli.Put(followURI.getPath().c_str(), defaultHeaders, buf.GetString(), "application/json");
         });
 
         ignoreSleep = req->isIgnoredSleep();
@@ -151,7 +178,7 @@ namespace hawkbit {
     }
 
     void HawkbitCommunicationClient::followDeploymentBase(uri::URI &followURI) {
-        auto resp =  retryHandler(followURI, [&](httplib::Client &cli) {
+        auto resp = retryHandler(followURI, [&](httplib::Client &cli) {
             return cli.Get(followURI.getPath().c_str(), defaultHeaders);
         });
 
@@ -209,49 +236,120 @@ namespace hawkbit {
         }
     }
 
-    void HawkbitCommunicationClient::downloadTo(uri::URI downloadURI, const std::string& path) {
-        std::ofstream file(path);
-         retryHandler(downloadURI, [&](httplib::Client &cli) {
-             return cli.Get(downloadURI.getPath().c_str(), defaultHeaders,
-                     [] (const httplib::Response &r) {
-                         checkHttpCode(r.status, HTTP_OK);
-                         return true;
-                     },
-                     [&] (const char * data, size_t size) {
-                         file.write(data, size);
-                         return !file.bad();
-                     }
-             );
-         });
-
-    }
-
-    std::string HawkbitCommunicationClient::getBody(uri::URI downloadURI) {
-        return retryHandler(downloadURI, [&](httplib::Client &cli){
-            return cli.Get(downloadURI.getPath().c_str(), defaultHeaders);
-        })->body;
-    }
-
-    void HawkbitCommunicationClient::downloadWithReceiver(uri::URI downloadURI, std::function<bool(const char *, size_t)> func) {
+    void HawkbitCommunicationClient::downloadTo(uri::URI downloadURI, const std::string &path) {
+        std::ofstream file(path, std::ios::binary);
         retryHandler(downloadURI, [&](httplib::Client &cli) {
-           return cli.Get(downloadURI.getPath().c_str(), defaultHeaders,
-                           [] (const httplib::Response &r) {
+            return cli.Get(downloadURI.getPath().c_str(), defaultHeaders,
+                           [](const httplib::Response &r) {
                                checkHttpCode(r.status, HTTP_OK);
                                return true;
-                           }, func
-                   );
+                           },
+                           [&](const char *data, size_t size) {
+                               file.write(data, size);
+                               return !file.bad();
+                           }
+            );
         });
 
     }
 
-    httplib::Result HawkbitCommunicationClient::retryHandler(uri::URI reqUri, const std::function<httplib::Result(httplib::Client &)> &func) {
+    std::string HawkbitCommunicationClient::getBody(uri::URI downloadURI) {
+        return retryHandler(downloadURI, [&](httplib::Client &cli) {
+            return cli.Get(downloadURI.getPath().c_str(), defaultHeaders);
+        })->body;
+    }
+
+    void HawkbitCommunicationClient::downloadWithReceiver(uri::URI downloadURI,
+                                                          std::function<bool(const char *, size_t)> func) {
+        retryHandler(downloadURI, [&](httplib::Client &cli) {
+            return cli.Get(downloadURI.getPath().c_str(), defaultHeaders,
+                           [](const httplib::Response &r) {
+                               checkHttpCode(r.status, HTTP_OK);
+                               return true;
+                           }, func
+            );
+        });
+
+    }
+
+    class AuthRestoreHandler_ : public AuthRestoreHandler {
+        HawkbitCommunicationClient *cli;
+    public:
+        explicit AuthRestoreHandler_(HawkbitCommunicationClient *cli_) : cli(cli_) {}
+
+        void setTLS(const std::string &crt, const std::string &key) override {
+            cli->setTLS(crt, key);
+        }
+
+        void setTargetEndpoint(std::string &endpoint) override {
+            cli->setTargetEndpoint(endpoint);
+        }
+
+        void setDeviceToken(const std::string &token) override {
+            cli->setDeviceToken(token);
+        }
+
+        void setGatewayToken(const std::string &token) override {
+            cli->setGatewayToken(token);
+        };
+    };
+
+    httplib::Result HawkbitCommunicationClient::wrappedRequest(uri::URI reqUri, const std::function<httplib::Result(
+            httplib::Client &)> &func) {
         auto cli = newHttpClient(reqUri);
         auto resp = func(cli);
         if (resp.error() != httplib::Error::Success) {
-            throw http_lib_error((int)resp.error());
+            throw http_lib_error((int) resp.error());
         }
         checkHttpCode(resp->status, HTTP_OK);
         return resp;
+    }
+
+    httplib::Result HawkbitCommunicationClient::retryHandler(uri::URI reqUri, const std::function<httplib::Result(
+            httplib::Client &)> &func) {
+        try {
+            return wrappedRequest(reqUri, func);
+        } catch (unauthorized_exception &e) {
+            if (!authErrorHandler) throw e;
+        } catch (client_initialize_error &e) {
+            if (!authErrorHandler) throw e;
+        }
+
+        authErrorHandler->onAuthError(
+                std::make_unique<AuthRestoreHandler_>(this));
+
+        return wrappedRequest(reqUri, func);;
+    }
+
+    void HawkbitCommunicationClient::setTLS(const std::string &crt, const std::string &key) {
+        mTLSKeypair.isSet = true;
+        mTLSKeypair.crt = crt;
+        mTLSKeypair.key = key;
+        defaultHeaders.erase(AUTHORIZATION_HEADER);
+    }
+
+    std::string formatAuthHeader(const std::string &authType, const std::string &val) {
+        return authType + " " + val;
+    }
+
+    void HawkbitCommunicationClient::setTargetEndpoint(std::string &endpoint) {
+        hawkbitURI = uri::URI::fromString(endpoint);
+    }
+
+    void HawkbitCommunicationClient::setDeviceToken(const std::string &token) {
+        defaultHeaders.insert({AUTHORIZATION_HEADER,
+                               formatAuthHeader(TARGET_TOKEN_HEADER, token)});
+        mTLSKeypair.isSet = false;
+        mTLSKeypair.crt = "";
+        mTLSKeypair.key = "";
+    }
+
+    void HawkbitCommunicationClient::setGatewayToken(const std::string &token) {
+        defaultHeaders.insert({AUTHORIZATION_HEADER,
+                               formatAuthHeader(GATEWAY_TOKEN_HEADER, token)});
+        mTLSKeypair.isSet = false;
+        mTLSKeypair.crt = "";
+        mTLSKeypair.key = "";
     }
 
 }
