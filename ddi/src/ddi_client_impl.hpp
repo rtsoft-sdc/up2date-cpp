@@ -69,7 +69,10 @@ namespace ddi {
 
         void setTLS(const std::string &crt, const std::string &key) override;
 
-        void setTargetEndpoint(std::string &endpoint) override;
+        void setEndpoint(const std::string &endpoint) override;
+
+        void setEndpoint(std::string &hawkbitEndpoint,
+                         const std::string &controllerId, const std::string &tenant = "default") override;
 
         void setDeviceToken(const std::string &string) override;
 
@@ -79,7 +82,7 @@ namespace ddi {
     };
 
     class DefaultClientBuilderImpl : public DDIClientBuilder {
-        uri::URI hawkbitUri;
+        std::string hawkbitUri;
 
         int pollingTimeout = 30000;
 

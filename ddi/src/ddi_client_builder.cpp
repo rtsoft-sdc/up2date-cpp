@@ -1,6 +1,7 @@
 #include "ddi/ddi_client.hpp"
 #include "ddi_client_impl.hpp"
 #include "uriparse.hpp"
+#include "utils.hpp"
 
 namespace ddi {
     std::unique_ptr<DDIClientBuilder> DDIClientBuilder::newInstance() {
@@ -14,20 +15,16 @@ namespace ddi {
     }
 
     DDIClientBuilder *DefaultClientBuilderImpl::setHawkbitEndpoint(const std::string &endpoint) {
-        this->hawkbitUri = uri::URI::fromString(endpoint);
+        this->hawkbitUri = endpoint;
 
         return this;
     }
 
     DDIClientBuilder *DefaultClientBuilderImpl::setHawkbitEndpoint(const std::string &endpoint,
-                                                                   const std::string &controllerId_,
-                                                                   const std::string &tenant_) {
-        auto hawkbitEndpoint = uri::URI::fromString(endpoint);
-        this->hawkbitUri = uri::URI::fromString(
-                hawkbitEndpoint.getScheme() + "://" + hawkbitEndpoint.getAuthority() + "/" + tenant_ + "/controller/v1/" +
-                controllerId_);
+                                                                   const std::string &controllerId,
+                                                                   const std::string &tenant) {
 
-        return this;
+        return  setHawkbitEndpoint(hawkbitEndpointFrom(endpoint, controllerId, tenant));
     }
 
     DDIClientBuilder *DefaultClientBuilderImpl::setDefaultPollingTimeout(int pollingTimeout_) {
@@ -92,7 +89,8 @@ namespace ddi {
         auto cli = new HawkbitCommunicationClient();
         auto cliPtr = std::unique_ptr<Client>(cli);
 
-        cli->hawkbitURI = hawkbitUri;
+        cli->setEndpoint(hawkbitUri);
+
         cli->defaultSleepTime = pollingTimeout;
         cli->currentSleepTime = pollingTimeout;
         cli->handler = handler;

@@ -22,7 +22,10 @@ namespace ddi {
         virtual void setTLS(const std::string &crt, const std::string &key) = 0;
 
         // should be used full url which contains controllerId
-        virtual void setTargetEndpoint(std::string &endpoint) = 0;
+        virtual void setEndpoint(const std::string &endpoint) = 0;
+        // default value for tenant will be inherited for all child classes
+        virtual void setEndpoint(std::string &hawkbitEndpoint,
+                                 const std::string &controllerId, const std::string &tenant = "default") = 0;
 
         virtual void setDeviceToken(const std::string &) = 0;
 

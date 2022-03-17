@@ -281,8 +281,8 @@ namespace ddi {
             cli->setTLS(crt, key);
         }
 
-        void setTargetEndpoint(std::string &endpoint) override {
-            cli->setTargetEndpoint(endpoint);
+        void setEndpoint(const std::string &endpoint) override {
+            cli->setEndpoint(endpoint);
         }
 
         void setDeviceToken(const std::string &token) override {
@@ -291,6 +291,12 @@ namespace ddi {
 
         void setGatewayToken(const std::string &token) override {
             cli->setGatewayToken(token);
+        }
+
+        void setEndpoint(std::string &hawkbitEndpoint, const std::string &controllerId,
+                    const std::string &tenant = "default") override {
+
+            cli->setEndpoint(hawkbitEndpoint, controllerId, tenant);
         };
     };
 
@@ -332,7 +338,7 @@ namespace ddi {
         return authType + " " + val;
     }
 
-    void HawkbitCommunicationClient::setTargetEndpoint(std::string &endpoint) {
+    void HawkbitCommunicationClient::setEndpoint(const std::string &endpoint) {
         hawkbitURI = uri::URI::fromString(endpoint);
     }
 
@@ -350,6 +356,12 @@ namespace ddi {
         mTLSKeypair.isSet = false;
         mTLSKeypair.crt = "";
         mTLSKeypair.key = "";
+    }
+
+    void HawkbitCommunicationClient::setEndpoint(std::string &hawkbitEndpoint, const std::string &controllerId,
+                                                 const std::string &tenant) {
+
+        setEndpoint(hawkbitEndpointFrom(hawkbitEndpoint, controllerId, tenant));
     }
 
 }
