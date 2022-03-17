@@ -9,13 +9,13 @@
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/writer.h"
 
-#include "hawkbit_client_impl.hpp"
+#include "ddi_client_impl.hpp"
 #include "response_impl.hpp"
 #include "actions_impl.hpp"
 #include "utils.hpp"
 
 
-namespace hawkbit {
+namespace ddi {
 
     const char *AUTHORIZATION_HEADER = "Authorization";
     const char *GATEWAY_TOKEN_HEADER = "GatewayToken";

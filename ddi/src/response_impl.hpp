@@ -1,6 +1,6 @@
-#include "hawkbit/hawkbit_response.hpp"
+#include "ddi/hawkbit_response.hpp"
 
-namespace hawkbit {
+namespace ddi {
     class ResponseImpl : public Response {
     private:
         Finished finished;

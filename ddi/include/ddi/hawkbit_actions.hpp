@@ -3,7 +3,7 @@
 #include <string>
 #include <functional>
 
-namespace hawkbit {
+namespace ddi {
     // This part contains actions that will be given to the EventHandler as callback params
     // Do not copy or use these classes outside the handler class
 

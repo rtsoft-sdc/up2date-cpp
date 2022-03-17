@@ -11,5 +11,5 @@ project(up2date-cpp)
 # Add sub directories
 add_subdirectory(modules)
 add_subdirectory(dps)
-add_subdirectory(hawkbit)
+add_subdirectory(ddi)
 add_subdirectory(example)

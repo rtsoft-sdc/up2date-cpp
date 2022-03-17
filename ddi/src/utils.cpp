@@ -1,7 +1,7 @@
 #include "utils.hpp"
-#include "hawkbit/hawkbit_exceptions.hpp"
+#include "ddi/hawkbit_exceptions.hpp"
 
-namespace hawkbit {
+namespace ddi {
     uri::URI parseHrefObject(const rapidjson::Value &hrefObject) {
         try {
             return uri::URI::fromString(hrefObject["href"].GetString());

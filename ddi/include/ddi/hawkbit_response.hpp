@@ -6,7 +6,7 @@
 #include <map>
 
 
-namespace hawkbit {
+namespace ddi {
     class ResponseDeliveryListener {
     public:
         virtual void onSuccessfulDelivery() = 0;

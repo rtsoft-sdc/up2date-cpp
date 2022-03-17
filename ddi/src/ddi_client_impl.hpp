@@ -5,12 +5,12 @@
 
 #include "httplib.h"
 #include "uriparse.hpp"
-#include "hawkbit/hawkbit_event_handler.hpp"
-#include "hawkbit/hawkbit_exceptions.hpp"
+#include "ddi/hawkbit_event_handler.hpp"
+#include "ddi/hawkbit_exceptions.hpp"
 #include "actions_impl.hpp"
-#include "hawkbit/hawkbit_client.hpp"
+#include "ddi/ddi_client.hpp"
 
-namespace hawkbit {
+namespace ddi {
 
     struct PollingData_;
 
@@ -78,7 +78,7 @@ namespace hawkbit {
         friend class DefaultClientBuilderImpl;
     };
 
-    class DefaultClientBuilderImpl : public DefaultClientBuilder {
+    class DefaultClientBuilderImpl : public DDIClientBuilder {
         uri::URI hawkbitUri;
 
         int pollingTimeout = 30000;
@@ -103,27 +103,27 @@ namespace hawkbit {
         AuthorizeVariants authVariant = AuthorizeVariants::NOT_SET;
 
     public:
-        DefaultClientBuilder *setHawkbitEndpoint(const std::string &) override;
+        DDIClientBuilder *setHawkbitEndpoint(const std::string &) override;
 
-        DefaultClientBuilder *setDefaultPollingTimeout(int pollingTimeout_) override;
+        DDIClientBuilder *setDefaultPollingTimeout(int pollingTimeout_) override;
 
-        DefaultClientBuilder *setEventHandler(std::shared_ptr<EventHandler> handler) override;
+        DDIClientBuilder *setEventHandler(std::shared_ptr<EventHandler> handler) override;
 
-        DefaultClientBuilder *addHeader(const std::string &, const std::string &) override;
+        DDIClientBuilder *addHeader(const std::string &, const std::string &) override;
 
-        DefaultClientBuilder *setGatewayToken(const std::string &) override;
+        DDIClientBuilder *setGatewayToken(const std::string &) override;
 
-        DefaultClientBuilder *setDeviceToken(const std::string &) override;
+        DDIClientBuilder *setDeviceToken(const std::string &) override;
 
-        DefaultClientBuilder *notVerifyServerCertificate() override;
+        DDIClientBuilder *notVerifyServerCertificate() override;
 
 
-        DefaultClientBuilder *setTLS(const std::string &crt, const std::string &key) override;
+        DDIClientBuilder *setTLS(const std::string &crt, const std::string &key) override;
 
-        DefaultClientBuilder *setAuthErrorHandler(std::shared_ptr<AuthErrorHandler>) override;
+        DDIClientBuilder *setAuthErrorHandler(std::shared_ptr<AuthErrorHandler>) override;
 
-        DefaultClientBuilder *setHawkbitEndpoint(const std::string &endpoint,
-                                                 const std::string &controllerId_, const std::string &tenant_ = "default") override;
+        DDIClientBuilder *setHawkbitEndpoint(const std::string &endpoint,
+                                             const std::string &controllerId_, const std::string &tenant_ = "default") override;
 
         std::unique_ptr<Client> build() override;
     };

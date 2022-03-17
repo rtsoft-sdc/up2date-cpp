@@ -1,6 +1,6 @@
 #include "response_impl.hpp"
 
-namespace hawkbit {
+namespace ddi {
     Response::Finished ResponseImpl::getFinished() {
         return finished;
     }

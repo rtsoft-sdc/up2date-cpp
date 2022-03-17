@@ -4,7 +4,7 @@
 #include "uriparse.hpp"
 
 
-namespace hawkbit {
+namespace ddi {
 
     uri::URI parseHrefObject(const rapidjson::Value &hrefObject);
 }

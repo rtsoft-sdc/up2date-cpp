@@ -1,6 +1,6 @@
 #include "response_impl.hpp"
 
-namespace hawkbit {
+namespace ddi {
     std::shared_ptr<ConfigResponseBuilder> ConfigResponseBuilder::newInstance() {
         return std::shared_ptr<ConfigResponseBuilder>(new ConfigResponseBuilderImpl());
     }

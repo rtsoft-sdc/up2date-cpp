@@ -1,9 +1,9 @@
 #include <iostream>
 #include <fstream>
 
-#include "hawkbit.hpp"
+#include "ddi.hpp"
 
-using namespace hawkbit;
+using namespace ddi;
 
 class CancelActionFeedbackDeliveryListener : public ResponseDeliveryListener {
 public:
@@ -83,8 +83,8 @@ public:
         std::cout << ">> CancelAction: id " << action->getId() << ", stopId " << action->getStopId() << std::endl;
 
         return ResponseBuilder::newInstance()
-                ->setExecution(hawkbit::Response::CLOSED)
-                ->setFinished(hawkbit::Response::SUCCESS)
+                ->setExecution(ddi::Response::CLOSED)
+                ->setFinished(ddi::Response::SUCCESS)
                 ->addDetail("Some feedback")
                 ->addDetail("One more feedback")
                 ->addDetail("Really important feedback")

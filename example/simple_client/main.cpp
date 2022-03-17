@@ -12,8 +12,8 @@ int main() {
     auto controllerId = getEnvOrExit(CONTROLLER_ID_ENV_NAME);
 
 
-    auto builder = DefaultClientBuilder::newInstance();
-    builder//->setHawkbitEndpoint(hawkbitEndpoint, controllerId)
+    auto builder = DDIClientBuilder::newInstance();
+    builder->setHawkbitEndpoint(hawkbitEndpoint, controllerId)
         ->setGatewayToken(gatewayToken)
         ->setEventHandler(std::shared_ptr<EventHandler>(new Handler()))
         ->notVerifyServerCertificate()

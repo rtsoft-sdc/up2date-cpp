@@ -1,27 +1,27 @@
-#include "hawkbit/hawkbit_client.hpp"
-#include "hawkbit_client_impl.hpp"
+#include "ddi/ddi_client.hpp"
+#include "ddi_client_impl.hpp"
 #include "uriparse.hpp"
 
-namespace hawkbit {
-    std::unique_ptr<DefaultClientBuilder> DefaultClientBuilder::newInstance() {
-        return std::unique_ptr<DefaultClientBuilder>(new DefaultClientBuilderImpl());
+namespace ddi {
+    std::unique_ptr<DDIClientBuilder> DDIClientBuilder::newInstance() {
+        return std::unique_ptr<DDIClientBuilder>(new DefaultClientBuilderImpl());
     }
 
-    DefaultClientBuilder *DefaultClientBuilderImpl::setEventHandler(std::shared_ptr<EventHandler> handler_) {
+    DDIClientBuilder *DefaultClientBuilderImpl::setEventHandler(std::shared_ptr<EventHandler> handler_) {
         handler = handler_;
 
         return this;
     }
 
-    DefaultClientBuilder *DefaultClientBuilderImpl::setHawkbitEndpoint(const std::string &endpoint) {
+    DDIClientBuilder *DefaultClientBuilderImpl::setHawkbitEndpoint(const std::string &endpoint) {
         this->hawkbitUri = uri::URI::fromString(endpoint);
 
         return this;
     }
 
-    DefaultClientBuilder *DefaultClientBuilderImpl::setHawkbitEndpoint(const std::string &endpoint,
-                                                                       const std::string &controllerId_,
-                                                                       const std::string &tenant_) {
+    DDIClientBuilder *DefaultClientBuilderImpl::setHawkbitEndpoint(const std::string &endpoint,
+                                                                   const std::string &controllerId_,
+                                                                   const std::string &tenant_) {
         auto hawkbitEndpoint = uri::URI::fromString(endpoint);
         this->hawkbitUri = uri::URI::fromString(
                 hawkbitEndpoint.getScheme() + "://" + hawkbitEndpoint.getAuthority() + "/" + tenant_ + "/controller/v1/" +
@@ -30,19 +30,19 @@ namespace hawkbit {
         return this;
     }
 
-    DefaultClientBuilder *DefaultClientBuilderImpl::setDefaultPollingTimeout(int pollingTimeout_) {
+    DDIClientBuilder *DefaultClientBuilderImpl::setDefaultPollingTimeout(int pollingTimeout_) {
         pollingTimeout = pollingTimeout_;
 
         return this;
     }
 
-    DefaultClientBuilder *DefaultClientBuilderImpl::addHeader(const std::string &k, const std::string &v) {
+    DDIClientBuilder *DefaultClientBuilderImpl::addHeader(const std::string &k, const std::string &v) {
         defaultHeaders.insert({k, v});
 
         return this;
     }
 
-    DefaultClientBuilder *DefaultClientBuilderImpl::setGatewayToken(const std::string &token_) {
+    DDIClientBuilder *DefaultClientBuilderImpl::setGatewayToken(const std::string &token_) {
         if (authVariant != AuthorizeVariants::NOT_SET) {
             throw std::runtime_error("Another authority type is already set");
         }
@@ -53,7 +53,7 @@ namespace hawkbit {
         return this;
     }
 
-    DefaultClientBuilder *DefaultClientBuilderImpl::setDeviceToken(const std::string &token_) {
+    DDIClientBuilder *DefaultClientBuilderImpl::setDeviceToken(const std::string &token_) {
         if (authVariant != AuthorizeVariants::NOT_SET) {
             throw std::runtime_error("Another authority type is already set");
         }
@@ -64,7 +64,7 @@ namespace hawkbit {
         return this;
     }
 
-    DefaultClientBuilder *DefaultClientBuilderImpl::setTLS(const std::string &crt_, const std::string &key_) {
+    DDIClientBuilder *DefaultClientBuilderImpl::setTLS(const std::string &crt_, const std::string &key_) {
         if (authVariant != AuthorizeVariants::NOT_SET) {
             throw std::runtime_error("Another authority type is already set");
         }
@@ -75,14 +75,14 @@ namespace hawkbit {
         return this;
     }
 
-    DefaultClientBuilder *DefaultClientBuilderImpl::notVerifyServerCertificate() {
+    DDIClientBuilder *DefaultClientBuilderImpl::notVerifyServerCertificate() {
         verifyServerCertificate = false;
 
         return this;
     }
 
 
-    DefaultClientBuilder *DefaultClientBuilderImpl::setAuthErrorHandler(std::shared_ptr<AuthErrorHandler> e) {
+    DDIClientBuilder *DefaultClientBuilderImpl::setAuthErrorHandler(std::shared_ptr<AuthErrorHandler> e) {
         authErrorHandler = e;
 
         return this;

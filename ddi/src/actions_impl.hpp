@@ -1,11 +1,11 @@
 #pragma once
 
 #include <memory>
-#include "hawkbit/hawkbit_actions.hpp"
+#include "ddi/hawkbit_actions.hpp"
 #include "uriparse.hpp"
 #include "httplib.h"
 
-namespace hawkbit {
+namespace ddi {
     // Define actions from hawkBit
     enum Actions_ {
         GET_CONFIG_DATA, CANCEL_ACTION, DEPLOYMENT_BASE,

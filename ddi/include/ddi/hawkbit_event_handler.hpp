@@ -5,7 +5,7 @@
 #include "hawkbit_response.hpp"
 #include "hawkbit_actions.hpp"
 
-namespace hawkbit {
+namespace ddi {
 
     // user defined event handler for hawkBit client
     class EventHandler {

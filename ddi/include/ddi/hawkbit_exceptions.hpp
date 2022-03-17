@@ -1,6 +1,6 @@
 #pragma once
 
-namespace hawkbit {
+namespace ddi {
     const int HTTP_UNAUTHORIZED = 401;
     const int HTTP_OK = 200;
     const int HTTP_CREATED = 201;

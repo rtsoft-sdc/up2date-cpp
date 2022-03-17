@@ -1,10 +1,10 @@
-project (hawkbit LANGUAGES CXX)
+project (ddi LANGUAGES CXX)
 
 set(VCPKG_FEATURE_FLAGS "manifests")
 # Add a library with the above sources
 file(GLOB SOURCES "src/*.cpp")
 add_library(${PROJECT_NAME} ${SOURCES})
-add_library(sub::hawkbit ALIAS ${PROJECT_NAME})
+add_library(sub::ddi ALIAS ${PROJECT_NAME})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX)
 

@@ -3,10 +3,10 @@
 
 #include "actions_impl.hpp"
 #include "rapidjson/document.h"
-#include "hawkbit_client_impl.hpp"
+#include "ddi_client_impl.hpp"
 #include "utils.hpp"
 
-namespace hawkbit {
+namespace ddi {
     int CancelAction_::getId() {
         return id;
     }
