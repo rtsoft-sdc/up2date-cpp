@@ -28,8 +28,41 @@ namespace ddi {
             throw http_unexpected_code_exception(presented, expected);
     }
 
+    class AuthRestoreHandler_ : public AuthRestoreHandler {
+        HawkbitCommunicationClient *cli;
+    public:
+        explicit AuthRestoreHandler_(HawkbitCommunicationClient *cli_) : cli(cli_) {}
+
+        void setTLS(const std::string &crt, const std::string &key) override {
+            cli->setTLS(crt, key);
+        }
+
+        void setEndpoint(const std::string &endpoint) override {
+            cli->setEndpoint(endpoint);
+        }
+
+        void setDeviceToken(const std::string &token) override {
+            cli->setDeviceToken(token);
+        }
+
+        void setGatewayToken(const std::string &token) override {
+            cli->setGatewayToken(token);
+        }
+
+        void setEndpoint(std::string &hawkbitEndpoint, const std::string &controllerId,
+                         const std::string &tenant = "default") override {
+
+            cli->setEndpoint(hawkbitEndpoint, controllerId, tenant);
+        };
+    };
 
     [[noreturn]] void HawkbitCommunicationClient::run() {
+        if (hawkbitURI.isEmpty()) {
+            if (!authErrorHandler)  throw client_initialize_error("endpoint or AuthErrorHandler is not set");
+            authErrorHandler->onAuthError(
+                    std::make_unique<AuthRestoreHandler_>(this));
+        }
+
         while (true) {
             ignoreSleep = false;
             doPoll();
@@ -39,10 +72,6 @@ namespace ddi {
     }
 
     httplib::Client HawkbitCommunicationClient::newHttpClient(uri::URI &hostEndpoint) const {
-        if (hostEndpoint.isEmpty() || !hostEndpoint.hasPath()) {
-            throw client_initialize_error("endpoint has bad format");
-        }
-
         // key pair auth
         if (mTLSKeypair.isSet) {
             BIO *bio_crt = BIO_new(BIO_s_mem());
@@ -272,34 +301,6 @@ namespace ddi {
 
     }
 
-    class AuthRestoreHandler_ : public AuthRestoreHandler {
-        HawkbitCommunicationClient *cli;
-    public:
-        explicit AuthRestoreHandler_(HawkbitCommunicationClient *cli_) : cli(cli_) {}
-
-        void setTLS(const std::string &crt, const std::string &key) override {
-            cli->setTLS(crt, key);
-        }
-
-        void setEndpoint(const std::string &endpoint) override {
-            cli->setEndpoint(endpoint);
-        }
-
-        void setDeviceToken(const std::string &token) override {
-            cli->setDeviceToken(token);
-        }
-
-        void setGatewayToken(const std::string &token) override {
-            cli->setGatewayToken(token);
-        }
-
-        void setEndpoint(std::string &hawkbitEndpoint, const std::string &controllerId,
-                    const std::string &tenant = "default") override {
-
-            cli->setEndpoint(hawkbitEndpoint, controllerId, tenant);
-        };
-    };
-
     httplib::Result HawkbitCommunicationClient::wrappedRequest(uri::URI reqUri, const std::function<httplib::Result(
             httplib::Client &)> &func) {
         auto cli = newHttpClient(reqUri);
@@ -317,12 +318,9 @@ namespace ddi {
             return wrappedRequest(reqUri, func);
         } catch (unauthorized_exception &e) {
             if (!authErrorHandler) throw e;
-        } catch (client_initialize_error &e) {
-            if (!authErrorHandler) throw e;
+            authErrorHandler->onAuthError(
+                    std::make_unique<AuthRestoreHandler_>(this));
         }
-
-        authErrorHandler->onAuthError(
-                std::make_unique<AuthRestoreHandler_>(this));
 
         return wrappedRequest(reqUri, func);;
     }

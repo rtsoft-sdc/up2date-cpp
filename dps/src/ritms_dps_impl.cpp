@@ -13,16 +13,6 @@ namespace ritms {
             return crt;
         }
 
-        // Up2DatePayload_impl -----------------------------------------------------------------------------
-
-        bool Up2DatePayload_impl::hasUp2DateEndpoint() {
-            return true;
-        }
-
-        std::string Up2DatePayload_impl::getUp2DateEndpoint() {
-            return endpoint;
-        }
-
         // ProvisioningData_impl ---------------------------------------------------------------------------
 
         std::unique_ptr<mTLSKeyPair> ProvisioningData_impl::getKeyPair() {

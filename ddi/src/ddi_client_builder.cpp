@@ -89,7 +89,8 @@ namespace ddi {
         auto cli = new HawkbitCommunicationClient();
         auto cliPtr = std::unique_ptr<Client>(cli);
 
-        cli->setEndpoint(hawkbitUri);
+        if (!hawkbitUri.empty())
+            cli->setEndpoint(hawkbitUri);
 
         cli->defaultSleepTime = pollingTimeout;
         cli->currentSleepTime = pollingTimeout;
