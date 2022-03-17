@@ -1,5 +1,7 @@
 #include "basic_handler.hpp"
 #include "ritms_dps.hpp"
+#include <exception>
+#include <thread>
 
 const char *AUTH_CERT_PATH_ENV_NAME = "CERT_PATH";
 const char *PROVISIONING_ENDPOINT_ENV_NAME = "PROVISIONING_ENDPOINT";
@@ -15,16 +17,25 @@ public:
     explicit DPSInfoReloadHandler(std::unique_ptr<ProvisioningClient> client_) : client(std::move(client_)) {};
 
     void onAuthError(std::unique_ptr<AuthRestoreHandler> ptr) override {
-        std::cout << "==============================================" << std::endl;
-        std::cout << "|DPSInfoReloadHandler| Starting provisioning..." << std::endl;
-        auto payload = client->doProvisioning();
-        std::cout << "|DPSInfoReloadHandler|     ... done" << std::endl;
-        auto keyPair = payload->getKeyPair();
-        std::cout << "|DPSInfoReloadHandler| Setting TLS ..." << std::endl;
-        ptr->setTLS(keyPair->getCrt(), keyPair->getKey());
-        std::cout << "|DPSInfoReloadHandler| Setting endpoint [" << payload->getUp2DateEndpoint() << "] ..." <<std::endl;
-        ptr->setEndpoint(payload->getUp2DateEndpoint());
-        std::cout << "==============================================" << std::endl;
+        for (;;) {
+            try {
+                std::cout << "==============================================" << std::endl;
+                std::cout << "|DPSInfoReloadHandler| Starting provisioning..." << std::endl;
+                auto payload = client->doProvisioning();
+                std::cout << "|DPSInfoReloadHandler|     ... done" << std::endl;
+                auto keyPair = payload->getKeyPair();
+                std::cout << "|DPSInfoReloadHandler| Setting TLS ..." << std::endl;
+                ptr->setTLS(keyPair->getCrt(), keyPair->getKey());
+                std::cout << "|DPSInfoReloadHandler| Setting endpoint [" << payload->getUp2DateEndpoint() << "] ..." << std::endl;
+                ptr->setEndpoint(payload->getUp2DateEndpoint());
+                std::cout << "==============================================" << std::endl;
+                return;
+            }
+            catch (std::exception &e) {
+                std::cout << "provisioning error: " << e.what() << " still trying..." << std::endl;
+                std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+            }
+        }
     }
 };
 
@@ -39,6 +50,7 @@ int main() {
     std::ifstream t((std::string(clientCertificatePath)));
     if (!t.is_open()) {
         std::cout << "File " << clientCertificatePath << " not exists" << std::endl;
+        throw std::runtime_error(std::string("fail: cannot open file :").append(clientCertificatePath));
     }
     std::string crt((std::istreambuf_iterator<char>(t)),
                     std::istreambuf_iterator<char>());
