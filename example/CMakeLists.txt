@@ -1,3 +1,3 @@
 project(example)
 
-add_subdirectory(simple_client)
+add_subdirectory(standalone_client)

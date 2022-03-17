@@ -50,7 +50,7 @@ namespace ritms {
                         std::make_unique<mTLSKeyPair_impl>(
                            document["crt"].GetString(), document["key"].GetString()
                         ),
-                        std::make_unique<Up2DatePayload_impl>(document["endpoint"].GetString())
+                        document["endpoint"].GetString()
                     )
             );
         }

@@ -32,12 +32,10 @@ namespace ritms {
             );
         }
 
-        std::unique_ptr<Up2DatePayload> ProvisioningData_impl::getUp2DatePayload() {
-
-            return std::unique_ptr<Up2DatePayload>(
-                new Up2DatePayload_impl(*this->up2DatePayload)
-            );
+        std::string ProvisioningData_impl::getUp2DateEndpoint() {
+            return up2DateEndpoint;
         }
+
 
         // CloudProvisioningClientBuilder_impl -------------------------------------------------------------
 
@@ -53,15 +51,15 @@ namespace ritms {
         }
 
         CloudProvisioningClientBuilder *
-        CloudProvisioningClientBuilder_impl::setProvisioningEndpoint(const std::string &endpoint) {
+        CloudProvisioningClientBuilder_impl::setEndpoint(const std::string &endpoint) {
             this->provisioningURI = uri::URI::fromString(endpoint);
 
             return this;
         }
 
         CloudProvisioningClientBuilder *
-        CloudProvisioningClientBuilder_impl::addAdditionalProvisioningHeader(const std::string &key,
-                                                                             const std::string &val) {
+        CloudProvisioningClientBuilder_impl::addHeader(const std::string &key,
+                                                       const std::string &val) {
             this->provisioningHeaders.insert({key, val});
 
             return this;
