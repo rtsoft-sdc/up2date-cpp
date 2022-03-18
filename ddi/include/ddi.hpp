@@ -3,7 +3,7 @@
 #include "ddi/hawkbit_response.hpp"
 #include "ddi/ddi_client.hpp"
 
-/*! \page ddiModule Description:
+/*! \page ddiModule ddi module description
  *  DDI module contains all required functionality for easy business logic development
  *
  *  The main case of this project is to simplify hawkBit communication model.

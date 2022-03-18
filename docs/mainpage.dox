@@ -1,7 +1,7 @@
 /**  \mainpage
   Presented documentation contains description for two separated modules:
-  - ddi (interface for communication with hawkBit)
-  - dps (interface for pprovisioning in up2date services)
+  - \link ddi ddi \endlink (interface for communication with hawkBit)
+  - \link ritms::dps dps \endlink (interface for pprovisioning in up2date services)
 
   ddi api usage example can be found (<a href="https://github.com/rtsoft-gmbh/up2date-cpp/blob/develop/example/standalone_client/main.cpp">here</a>)
   ddi + dps module (<a href="https://github.com/rtsoft-gmbh/up2date-cpp/blob/develop/example/up2date_client/main.cpp">here</a>)
