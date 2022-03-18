@@ -23,7 +23,7 @@ for the JavaScript code in this file
 var NAVTREE =
 [
   [ "up2date-cpp", "index.html", [
-    [ "Description:", "d4/d1d/ddi_module.html", null ],
+    [ "ddi module description", "d4/d1d/ddi_module.html", null ],
     [ "dps module description", "de/dd5/dps_module.html", null ],
     [ "Namespaces", "namespaces.html", [
       [ "Namespace List", "namespaces.html", "namespaces_dup" ],
