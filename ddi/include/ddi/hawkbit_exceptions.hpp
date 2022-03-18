@@ -15,7 +15,7 @@ namespace ddi {
         }
     };
 
-    // throws if returned unexpected HTTP code
+    // Unexpected HTTP code
     class http_unexpected_code_exception : public std::exception {
         std::string message;
 
@@ -30,7 +30,7 @@ namespace ddi {
         }
     };
 
-    // throws if payload from hawkbit is invalid
+    // Payload from hawkbit is invalid
     class unexpected_payload : public std::exception {
     public:
         const char *what() const noexcept override {
@@ -38,7 +38,7 @@ namespace ddi {
         }
     };
 
-    // throws if got unexpected data from client-defined handler
+    // Unexpected data from client-defined handler
     class wrong_response : public std::exception {
     public:
         const char *what() const noexcept override {
@@ -58,7 +58,7 @@ namespace ddi {
         }
     };
 
-    // to catch and handle with on auth error handler
+    // Some required fields for ddi::Client are missing
     class client_initialize_error : public std::exception {
         std::string message;
     public:
