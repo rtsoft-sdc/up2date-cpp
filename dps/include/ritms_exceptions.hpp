@@ -7,6 +7,7 @@ namespace ritms {
         const int HTTP_OK = 200;
         const int HTTP_CREATED = 201;
 
+        // Error in httplib
         class httplib_error: public std::exception {
             std::string message;
         public:
@@ -18,6 +19,7 @@ namespace ritms {
             }
         };
 
+        // Error while provisioning (unexpected response code)
         class provisioning_error: public std::exception {
             std::string message;
         public:
@@ -29,6 +31,7 @@ namespace ritms {
             }
         };
 
+        // Error in cloud
         class up2date_cloud_error: public std::exception {
             std::string message;
         public:
