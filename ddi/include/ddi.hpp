@@ -3,8 +3,7 @@
 #include "ddi/hawkbit_response.hpp"
 #include "ddi/ddi_client.hpp"
 
-/*
- * Description:
+/*! \page ddiModule Description:
  *  DDI module contains all required functionality for easy business logic development
  *
  *  The main case of this project is to simplify hawkBit communication model.
@@ -16,14 +15,23 @@
  * Communication model scheme:
  *  For library user the communication model looks like:
  *
+ *  ```
+ *
  *  hawkBit -- (action) --> ddi
+ *
  *                           +    -->   EventHandler.(action)
+ *
  *                                           [your logic]
+ *
  *                                           return result
+ *
  *  hawkBit <--(response) -- +    <--              +
+ *
+ *  ```
  *
  *  Also AuthErrorHandler, ResponseDeliveryListener can be implemented.
  *  This interfaces provides API for client behaviour customisation. You can get more information about interfaces in
  *   module documentation.
  *
+ *  \link ddi::Client::run You can begin from here \endlink
  */

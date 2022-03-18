@@ -7,7 +7,7 @@ namespace ddi {
 
     const std::string UNAUTHORIZED_ERROR_MESSAGE = "Got " + std::to_string(HTTP_UNAUTHORIZED) + " code";
 
-    // throws if returned unauthorized HTTP code from hawkBit
+    ///\brief Got unauthorized HTTP code from hawkBit.
     class unauthorized_exception : public std::exception {
     public:
         const char *what() const noexcept override {
@@ -15,7 +15,7 @@ namespace ddi {
         }
     };
 
-    // Unexpected HTTP code
+    ///\brief  Unexpected HTTP code.
     class http_unexpected_code_exception : public std::exception {
         std::string message;
 
@@ -30,7 +30,7 @@ namespace ddi {
         }
     };
 
-    // Payload from hawkbit is invalid
+    ///\brief  Payload from hawkbit is invalid.
     class unexpected_payload : public std::exception {
     public:
         const char *what() const noexcept override {
@@ -38,7 +38,7 @@ namespace ddi {
         }
     };
 
-    // Unexpected data from client-defined handler
+    ///\brief  Unexpected data from client-defined handler.
     class wrong_response : public std::exception {
     public:
         const char *what() const noexcept override {
@@ -58,7 +58,7 @@ namespace ddi {
         }
     };
 
-    // Some required fields for ddi::Client are missing
+    ///\brief  Some required fields for ddi::Client are missing
     class client_initialize_error : public std::exception {
         std::string message;
     public:

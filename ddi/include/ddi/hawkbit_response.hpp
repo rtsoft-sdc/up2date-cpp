@@ -7,31 +7,37 @@
 
 
 namespace ddi {
-    // Interface that can be implemented to check that response delivered(not) to hawkBit
-    // If update is installed, but successful status response not delivered to hawkBit, you will get this update again.
-    //  To prevent this you can store updateId, and send successful status response on the next request.
+    ///\brief  Interface that can be implemented to check that response delivered(not) to hawkBit.
+    /*! If update is installed, but successful status response not delivered to hawkBit, you will get this update again.
+    *  To prevent this you can store updateId, and send successful status response on the next request.
+    */
     class ResponseDeliveryListener {
     public:
+        ///\brief Called if response successful delivered to hawkBit.
         virtual void onSuccessfulDelivery() = 0;
 
+        ///\brief Called if response not delivered to hawkBit.
         virtual void onError() = 0;
 
         virtual ~ResponseDeliveryListener() = default;
     };
 
-    // Response abstraction. Returned as callbacks result in EventHandler .
-    // Use ResponseBuilder to create Response instance.
+    ///\brief  Response abstraction.
+    /*! Returned as callbacks result in ddi::EventHandler.
+    * @note Use ddo::ResponseBuilder to create ddi::Response instance.
+    */
     class Response {
     public:
-        // Read about hawkBit state machine here [https://www.eclipse.org/hawkbit/apis/ddi_api/] (State Machine Mapping)
-        // Indicates if the action is finished
+        ///\brief Indicates if the action is finished.
+        /// <a href="https://www.eclipse.org/hawkbit/apis/ddi_api/">State Machine Mapping</a>
         enum Finished {
             SUCCESS,
             FAILURE,
             NONE
         };
 
-        // Indicates status of the action
+        ///\brief Indicates status of the action
+        /// <a href="https://www.eclipse.org/hawkbit/apis/ddi_api/">State Machine Mapping</a>
         enum Execution {
             CLOSED, PROCEEDING,
             CANCELED, SCHEDULED,
@@ -40,80 +46,91 @@ namespace ddi {
 
         // Next methods should not be used by user code (they are not documented).
         // ----------------------------------------------------------------
+        /// @note should not be used by user code.
         static std::string finishedToString(const Finished &);
 
+        /// @note should not be used by user code.
         static std::string executionToString(const Execution &);
 
+        /// @note should not be used by user code.
         virtual Finished getFinished() = 0;
 
+        /// @note should not be used by user code.
         virtual Execution getExecution() = 0;
 
+        /// @note should not be used by user code.
         virtual std::vector<std::string> getDetails() = 0;
 
+        /// @note should not be used by user code.
         virtual std::shared_ptr<ResponseDeliveryListener> getDeliveryListener() = 0;
 
+        /// @note should not be used by user code.
         virtual bool isIgnoredSleep() = 0;
 
         virtual ~Response() = default;
         // ----------------------------------------------------------------
     };
 
-    // ResponseBuilder is used to build Response.
+    ///\brief Used to build ddi::Response.
     class ResponseBuilder {
     public:
-        // Get instance of builder.
+        ///\brief Get instance of builder.
         static std::shared_ptr<ResponseBuilder> newInstance();
 
-        // Set Finished flag.
+        ///\brief Set Finished flag.
         virtual ResponseBuilder *setFinished(Response::Finished) = 0;
 
-        // Set Execution flag.
+        ///\brief Set Execution flag.
         virtual ResponseBuilder *setExecution(Response::Execution) = 0;
 
-        // Add details (string). Will be sent as array to hawkBit.
+        ///\brief Add details (string). Will be sent as array to hawkBit.
         virtual ResponseBuilder *addDetail(const std::string &) = 0;
 
-        // Set delivery listener. You can set own for each request.
+        ///\brief Set delivery listener.
+        /// @note You can set own for each request.
         virtual ResponseBuilder *setResponseDeliveryListener(std::shared_ptr<ResponseDeliveryListener>) = 0;
 
-        // If this flag is set, next action will be received without wait polling interval.
-        // Is very useful when have many actions in queue.
+        ///\brief If this flag is set, next action will be received without wait polling interval.
+        // @note Is very useful when have many actions in queue.
         virtual ResponseBuilder *setIgnoreSleep() = 0;
 
-        // Build Response.
+        ///\brief Build ddi::Response.
         virtual std::unique_ptr<Response> build() = 0;
 
         virtual ~ResponseBuilder() = default;
     };
 
-    // Config Response abstraction.
-    // Use ConfigResponseBuilder to create ConfigResponse instance.
+    ///\brief Config Response abstraction.
+    /// @note Use ddi::ConfigResponseBuilder to create ddi::ConfigResponse instance.
     class ConfigResponse {
     public:
         // Next methods should not be used by user code (they are not documented).
         // ----------------------------------------------------------------
+        /// @note should not be used by user code.
         virtual std::map<std::string, std::string> getData() = 0;
 
+        /// @note should not be used by user code.
         virtual bool isIgnoredSleep() = 0;
 
         virtual ~ConfigResponse() = default;
         // ----------------------------------------------------------------
     };
 
-    // ConfigResponseBuilder is used to build ConfigResponse.
+    ///\brief ddi::ConfigResponseBuilder is used to build ddi::ConfigResponse.
     class ConfigResponseBuilder {
     public:
-        // Get instance of builder.
+        ///\brief Get instance of builder.
         static std::shared_ptr<ConfigResponseBuilder> newInstance();
 
-        // Add key, value data (config data), will be displayed in hawkBit GUI.
+        ///\brief Add key, value data (config data)
+        /// @note This data will be displayed in hawkBit GUI.
         virtual ConfigResponseBuilder *addData(const std::string &, const std::string &) = 0;
 
-        // If this flag is set, next action will be received without wait polling interval.
-        // Is very useful when have many actions in queue.
+        ///\brief If this flag is set, next action will be received without wait polling interval.
+        /// @note Is very useful when have many actions in queue.
         virtual ConfigResponseBuilder *setIgnoreSleep() = 0;
 
-        // Build ConfigResponse.
+        ///\brief Build ddi::ConfigResponse.
         virtual std::unique_ptr<ConfigResponse> build() = 0;
 
         virtual ~ConfigResponseBuilder() = default;
