@@ -1,4 +1,4 @@
-project(ritms_auth)
+project(ritms_auth_cli)
 
 add_executable(${PROJECT_NAME} main.cpp)
 
