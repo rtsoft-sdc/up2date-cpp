@@ -1,0 +1,3 @@
+{
+  "doxygen_runner.configuration_file_override": "${workspaceFolder}/Doxyfile"
+}
