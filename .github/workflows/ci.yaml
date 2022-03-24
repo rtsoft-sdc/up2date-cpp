@@ -1,9 +1,14 @@
-name: CI
+name: ghcr.io
 
 on:
   push:
     branches: [ develop ]
   workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  UP2DATE_CONTAINER_NAME: up2date_cpp
+  DPS_CONTAINER_NAME: ritms_auth
 
 jobs:
   build:
@@ -14,6 +19,25 @@ jobs:
       - name: Build builder image
         run: docker build -f ./.github/Dockerfile_builder -t builder_b ./.github/.
       - name: Build artifacts
-        run: docker run --rm -v "$(pwd):/var/up2date-cpp" builder_b
-      - name: Show what builder build in build directory
-        run: ls -l build
+        run: docker run -i --rm -v "$(pwd):/var/up2date-cpp" builder_b
+
+      - name: Build up2date_client image
+        run: docker build -f example/Dockerfile_up2date_client . -t "${REGISTRY}/rtsoft-gmbh/${UP2DATE_CONTAINER_NAME}:latest"
+      - name: Build dps_client image
+        run: docker build -f example/Dockerfile_ritms_auth . -t "${REGISTRY}/rtsoft-gmbh/${DPS_CONTAINER_NAME}:latest"
+
+      - name: Login into regestry
+        uses: docker/login-action@v1.14.1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Display containers to be pushed
+        run: echo "${REGISTRY}/rtsoft-gmbh/${UP2DATE_CONTAINER_NAME}:latest" && echo "${REGISTRY}/rtsoft-gmbh/${DPS_CONTAINER_NAME}:latest"
+
+      - name: pushing UP2DATE_CONTAINER image
+        run: docker push "${REGISTRY}/rtsoft-gmbh/${UP2DATE_CONTAINER_NAME}:latest"
+
+      - name: pushing DPS_CONTAINER image
+        run: docker push "${REGISTRY}/rtsoft-gmbh/${DPS_CONTAINER_NAME}:latest"
