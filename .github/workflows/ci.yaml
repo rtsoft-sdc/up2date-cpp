@@ -1,0 +1,19 @@
+name: CI
+
+on:
+  push:
+    branches: [ develop ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Building images
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build builder image
+        run: docker build -f ./.github/Dockerfile_builder -t builder_b ./.github/.
+      - name: Build artifacts
+        run: docker run --rm -v "$(pwd):/var/up2date-cpp" builder_b
+      - name: Show what builder build in build directory
+        run: ls -l build
