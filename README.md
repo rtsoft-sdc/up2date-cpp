@@ -1,3 +1,5 @@
+[![ghcr.io](https://github.com/rtsoft-gmbh/up2date-cpp/actions/workflows/ci.yaml/badge.svg)](https://github.com/rtsoft-gmbh/up2date-cpp/actions/workflows/ci.yaml)
+
 # UP2DATE CLIENT C++ Library
 
 ## INTRODUCTION
