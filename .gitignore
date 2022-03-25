@@ -1,5 +1,4 @@
 build
-.vscode
 .idea
 cmake-build-debug
 /cert/*.crt
@@ -8,3 +7,4 @@ cmake-build-debug
 cert/password
 /*.conf
 vcpkg_*
+html
