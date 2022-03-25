@@ -6,9 +6,6 @@ FROM mcr.microsoft.com/vscode/devcontainers/cpp:0-${VARIANT}
 
 ENV VCPKG_ROOT /usr/local/vcpkg
 
-RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-     && apt-get -y install --no-install-recommends libssl-dev
-
 ENV PATH "${VCPKG_ROOT}:${PATH}"
 
 RUN vcpkg integrate install
