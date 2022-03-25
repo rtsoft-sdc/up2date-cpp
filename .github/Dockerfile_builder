@@ -1,0 +1,20 @@
+ARG VARIANT="bullseye"
+FROM debian:${VARIANT}
+
+RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
+    && apt-get -y install ca-certificates make cmake git curl zip unzip tar pkg-config build-essential \
+    && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/*
+
+ENV VCPKG_ROOT /usr/vcpkg
+
+RUN git clone https://github.com/Microsoft/vcpkg ${VCPKG_ROOT} \
+    && cd ${VCPKG_ROOT} \
+    && ./bootstrap-vcpkg.sh
+
+ENV PATH "${VCPKG_ROOT}:${PATH}"
+RUN vcpkg integrate install
+
+COPY build.sh /var/build.sh
+RUN chmod +x /var/build.sh
+
+ENTRYPOINT ["/var/build.sh"]

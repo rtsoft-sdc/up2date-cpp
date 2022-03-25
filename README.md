@@ -1,3 +1,5 @@
+[![ghcr.io](https://github.com/rtsoft-gmbh/up2date-cpp/actions/workflows/ci.yaml/badge.svg)](https://github.com/rtsoft-gmbh/up2date-cpp/actions/workflows/ci.yaml)
+
 # UP2DATE CLIENT C++ Library
 
 ## INTRODUCTION
@@ -15,11 +17,11 @@ This C++ client library is a reference implementation of RITMS UP2DATE API for c
 1. Contact [RITMS UP2DATE](https://ritms.online) to get access and keys for a tenant service deployed in a cloud.
 2. Using provided (or generated) `client.conf`
 ```shell   
-docker run --rm -v "$(pwd)/client.conf:/opt/client.conf" rtsoft/up2date_cpp:latest
+docker run --rm -v "$(pwd)/client.conf:/opt/client.conf" ghcr.io/rtsoft-gmbh/up2date_cpp:latest
 ```
 > in Windows Command Line (cmd):
 ```shell   
-docker run --rm -v "%cd%/client.conf:/opt/client.conf" rtsoft/up2date_cpp:latest
+docker run --rm -v "%cd%/client.conf:/opt/client.conf" ghcr.io/rtsoft-gmbh/up2date_cpp:latest
 ```
 
 3. Log in UP2DATE Management UI, upload a firmware bundle and assign it to the device. 

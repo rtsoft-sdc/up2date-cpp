@@ -1,10 +1,10 @@
-project(up2date_cli)
+project(ritms_auth_cli)
 
 add_executable(${PROJECT_NAME} main.cpp)
 
-target_include_directories( ${PROJECT_NAME}
-        PRIVATE ${PROJECT_SOURCE_DIR}/../include
-)
+set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX)
+
+find_package(RapidJSON CONFIG REQUIRED)
 
 if (UNIX)
     set(LINK_FLAGS "-static-libgcc -static-libstdc++")
@@ -13,7 +13,7 @@ else()
 endif (UNIX)
 
 target_link_libraries(${PROJECT_NAME}
-        sub::ddi
         sub::dps
+        rapidjson
         ${LINK_FLAGS}
 )
