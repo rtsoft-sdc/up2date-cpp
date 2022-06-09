@@ -9,6 +9,7 @@ ENV VCPKG_ROOT /usr/local/vcpkg
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
      && apt-get -y install --no-install-recommends doxygen
 
+RUN cd ${VCPKG_ROOT} && git fetch origin b86c0c35b88e2bf3557ff49dc831689c2f085090
 ENV PATH "${VCPKG_ROOT}:${PATH}"
 
 RUN vcpkg integrate install
