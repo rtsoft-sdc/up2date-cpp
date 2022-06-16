@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "ddiclient.h"
-#include "../ddi/include/ddi.hpp"
+#include "ddi.hpp"
 
 namespace HkbClient {
 

@@ -1,10 +1,11 @@
 #pragma once
-#include "../ddi/include/ddi.hpp"
+#include "ddi.hpp"
+#include "dllexport.h"
 
 namespace HkbClient {
 	extern "C"
 	{
-		__declspec(dllexport) int __stdcall TestFunction1(int, int);
-		__declspec(dllexport) void _stdcall BuildAndRun(void);
+		WDLL_EXPORT int __stdcall TestFunction1(int, int);
+		WDLL_EXPORT void _stdcall BuildAndRun(void);
 	}
 }
