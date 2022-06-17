@@ -12,15 +12,19 @@ using namespace ddi;
 
 namespace HkbClient {
 
-	int __stdcall TestFunction1(int a1, int a2)	{
+	int TestFunction1(int a1, int a2)	{
 		return a1 + a2;
 	}
 
-	int __stdcall TestFunction2(const char* s)	{
+	int TestFunction2(const char* s)	{
 		return std::string(s).length();
 	}
 
-    void __stdcall RunClient(const char* clientCertificatePath, const char* provisioningEndpoint, const char* xApigToken) {
+    // void callback(void) {
+    // }
+
+    //void __stdcall RunClient(const char* clientCertificatePath, const char* provisioningEndpoint, const char* xApigToken) {
+    void RunClient(const char* clientCertificatePath, const char* provisioningEndpoint, const char* xApigToken, callback_function callback) {
         std::ifstream t((std::string(clientCertificatePath)));
         if (!t.is_open()) {
             std::cout << "File " << clientCertificatePath << " not exists" << std::endl;
@@ -40,7 +44,7 @@ namespace HkbClient {
 
         auto builder = DDIClientBuilder::newInstance();
         builder->setAuthErrorHandler(authErrorHandler)
-            ->setEventHandler(std::shared_ptr<EventHandler>(new CallbackDispatcher()))
+            ->setEventHandler(std::shared_ptr<EventHandler>(new CallbackDispatcher(callback)))
             ->build()
             ->run();
 

@@ -32,15 +32,18 @@ namespace HkbClient {
     };
 
     class CallbackDispatcher : public EventHandler {
+        char* (*callbackfunction)(void);
     public:
         std::unique_ptr<ConfigResponse> onConfigRequest() override {
             std::cout << ">> Sending Config Data" << std::endl;
+
+            auto s = std::string(callbackfunction());
 
             return ConfigResponseBuilder::newInstance()
                     ->addData("some", "config1")
                     ->addData("some1", "new config")
                     ->addData("some2", "RITMS123")
-                    ->addData("some3", "TES_TEST_TEST")
+                    ->addData("some3", s)
                     ->setIgnoreSleep()
                     ->build();
         }
@@ -104,7 +107,9 @@ namespace HkbClient {
 
         ~CallbackDispatcher() = default;
 
-        CallbackDispatcher() = default;
+        CallbackDispatcher(char* (*callback)(void)) {
+            callbackfunction = callback;
+        };
     };
 
 }
