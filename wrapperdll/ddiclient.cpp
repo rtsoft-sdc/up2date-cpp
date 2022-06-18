@@ -4,7 +4,6 @@
 #include "ddiclient.h"
 #include "..\ddi\include\ddi.hpp"
 #include "..\dps\include\ritms_dps.hpp"
-#include "CallbackDispatcher.hpp"
 #include "DPSInfoReloadHandler.hpp"
 
 using namespace ritms::dps;
@@ -12,19 +11,28 @@ using namespace ddi;
 
 namespace HkbClient {
 
-	int TestFunction1(int a1, int a2)	{
-		return a1 + a2;
-	}
+    CallbackDispatcher* CreateDispatcher(callback_function callback)
+    {
+        auto dispatcher = new CallbackDispatcher(callback);
+        return dispatcher;
+    }
 
-	int TestFunction2(const char* s)	{
-		return std::string(s).length();
-	}
+    void SetConfig(CallbackDispatcher* dispatcher, _KEYVALUEPAIR* keyvaluepairs, int size)
+    {
+        std::vector<KEYVALUEPAIR> configInfo;
+        for(int i = 0; i < size; ++i)
+        {
+            configInfo.push_back(KEYVALUEPAIR { std::string(keyvaluepairs[i].key), std::string(keyvaluepairs[i].value) } );
+        }
+        dispatcher->SetConfig(configInfo);
+    }
 
-    // void callback(void) {
-    // }
+    void SetDownloadLocation(CallbackDispatcher* dispatcher, const char* location)
+    {
+        dispatcher->SetDownloadLocation(location);
+    }
 
-    //void __stdcall RunClient(const char* clientCertificatePath, const char* provisioningEndpoint, const char* xApigToken) {
-    void RunClient(const char* clientCertificatePath, const char* provisioningEndpoint, const char* xApigToken, callback_function callback) {
+    void RunClient(const char* clientCertificatePath, const char* provisioningEndpoint, const char* xApigToken, CallbackDispatcher* dispatcher) {
         std::ifstream t((std::string(clientCertificatePath)));
         if (!t.is_open()) {
             std::cout << "File " << clientCertificatePath << " not exists" << std::endl;
@@ -43,11 +51,17 @@ namespace HkbClient {
 
 
         auto builder = DDIClientBuilder::newInstance();
+
         builder->setAuthErrorHandler(authErrorHandler)
-            ->setEventHandler(std::shared_ptr<EventHandler>(new CallbackDispatcher(callback)))
+            ->setEventHandler(std::shared_ptr<EventHandler>(dispatcher))
             ->build()
             ->run();
 
+    }
+
+    void ReleaseDispatcher(CallbackDispatcher* dispatcher)
+    {
+        delete dispatcher;
     }
 
 }

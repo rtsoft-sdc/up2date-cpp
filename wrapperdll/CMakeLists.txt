@@ -2,7 +2,7 @@ project(wrapperdll)
 include (GenerateExportHeader)
 
 set (CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-add_library(wrapperdll SHARED dllmain.cpp ddiclient.cpp) 
+add_library(wrapperdll SHARED dllmain.cpp ddiclient.cpp CallbackDispatcher.cpp) 
 GENERATE_EXPORT_HEADER( wrapperdll
              BASE_NAME wrapperdll
              EXPORT_MACRO_NAME WDLL_EXPORT

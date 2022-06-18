@@ -9,6 +9,57 @@ using namespace ddi;
 
 namespace HkbClient {
 
+    enum DownloadEventType {
+        STARTED,
+        FINISHED
+    };
+
+    typedef struct
+    {
+        DownloadEventType eventType;
+        int id;
+        const char* updateType;
+        const char* downloadType;
+        bool        isInMaintenanceWindow;
+        const char* chunkPart;
+        const char* chunkName;
+        const char* chunkVersion;
+        const char* artifactFileName;
+        const char* artifactFileHashMd5;
+        const char* artifactFileHashSha1;
+        const char* artifactFileHashSha256;
+    } _DEPLOYMENTINFO;
+
+    typedef struct
+    {
+        DownloadEventType eventType;
+        int         id;
+        std::string updateType;
+        std::string downloadType;
+        bool        isInMaintenanceWindow;
+        std::string chunkPart;
+        std::string chunkName;
+        std::string chunkVersion;
+        std::string artifactFileName;
+        std::string artifactFileHashMd5;
+        std::string artifactFileHashSha1;
+        std::string artifactFileHashSha256;
+    } DEPLOYMENTINFO;
+
+    typedef void (*callback_function)(_DEPLOYMENTINFO info);
+
+    typedef struct 
+    {
+        char* key;
+        char* value;
+    } _KEYVALUEPAIR;
+
+    typedef struct 
+    {
+        std::string key;
+        std::string value;
+    } KEYVALUEPAIR;
+
     class CancelActionFeedbackDeliveryListener : public ResponseDeliveryListener {
     public:
         void onSuccessfulDelivery() override {
@@ -32,84 +83,33 @@ namespace HkbClient {
     };
 
     class CallbackDispatcher : public EventHandler {
-        char* (*callbackfunction)(void);
+
     public:
-        std::unique_ptr<ConfigResponse> onConfigRequest() override {
-            std::cout << ">> Sending Config Data" << std::endl;
 
-            auto s = std::string(callbackfunction());
+        void SetConfig(const std::vector<KEYVALUEPAIR> config);
+    
+        void CallbackDispatcher::SetDownloadLocation(const std::string location);
 
-            return ConfigResponseBuilder::newInstance()
-                    ->addData("some", "config1")
-                    ->addData("some1", "new config")
-                    ->addData("some2", "RITMS123")
-                    ->addData("some3", s)
-                    ->setIgnoreSleep()
-                    ->build();
-        }
+        std::unique_ptr<ConfigResponse> onConfigRequest() override;
 
-        std::unique_ptr<Response> onDeploymentAction(std::unique_ptr<DeploymentBase> dp) override {
-            std::cout << ">> Get Deployment base request" << std::endl;
-            std::cout << " id: " << dp->getId() << " update: " << dp->getUpdateType() << std::endl;
-            std::cout << " download: " << dp->getDownloadType() << " inWindow: " << (bool) dp->isInMaintenanceWindow()
-                    << std::endl;
+        std::unique_ptr<Response> onDeploymentAction(std::unique_ptr<DeploymentBase> dp) override;
 
-            auto builder = ResponseBuilder::newInstance();
-            builder->addDetail("Printed deployment base info");
-            std::cout << " + CHUNKS:" << std::endl;
+        std::unique_ptr<Response> onCancelAction(std::unique_ptr<CancelAction> action) override;
 
-            for (const auto &chunk: dp->getChunks()) {
-                std::cout << "  part: " << chunk->getPart() << std::endl;
-                std::cout << "  name: " << chunk->getName() << " version: " << chunk->getVersion() << std::endl;
-                std::cout << "  + ARTIFACTS:" << std::endl;
-                for (const auto &artifact: chunk->getArtifacts()) {
-                    std::cout << "   filename: " << artifact->getFilename() << " size: " << artifact->size() << std::endl;
-                    std::cout << "   md5: " << artifact->getFileHashes().md5 << std::endl;
-                    std::cout << "   sha1: " << artifact->getFileHashes().sha1 << std::endl;
-                    std::cout << "   sha256: " << artifact->getFileHashes().sha256 << std::endl;
-                    builder->addDetail(artifact->getFilename() + " described. Starting download ...");
-                    std::cout << "  .. downloading " + artifact->getFilename() + "...";
-                    artifact->downloadTo(artifact->getFilename());
-                    builder->addDetail("Downloaded " + artifact->getFilename());
-                    std::cout << "[OK]" << std::endl;
-                }
-                std::cout << " + ---------------------------" << std::endl;
-            }
-
-            return builder->addDetail("Work done. Sending response")
-                    ->setIgnoreSleep()
-                    ->setExecution(Response::CLOSED)
-                    ->setFinished(Response::SUCCESS)
-                    ->setResponseDeliveryListener(
-                            std::shared_ptr<ResponseDeliveryListener>(new DeploymentBaseFeedbackDeliveryListener()))
-                    ->build();
-
-        }
-
-        std::unique_ptr<Response> onCancelAction(std::unique_ptr<CancelAction> action) override {
-            std::cout << ">> CancelAction: id " << action->getId() << ", stopId " << action->getStopId() << std::endl;
-
-            return ResponseBuilder::newInstance()
-                    ->setExecution(ddi::Response::CLOSED)
-                    ->setFinished(ddi::Response::SUCCESS)
-                    ->addDetail("Some feedback")
-                    ->addDetail("One more feedback")
-                    ->addDetail("Really important feedback")
-                    ->setResponseDeliveryListener(
-                            std::shared_ptr<ResponseDeliveryListener>(new CancelActionFeedbackDeliveryListener()))
-                    ->setIgnoreSleep()
-                    ->build();
-        }
-
-        void onNoActions() override {
-            std::cout << "No actions from hawkBit" << std::endl;
-        }
+        void onNoActions() override;
 
         ~CallbackDispatcher() = default;
 
-        CallbackDispatcher(char* (*callback)(void)) {
+        CallbackDispatcher(callback_function callback) {
             callbackfunction = callback;
         };
-    };
 
+    private:
+
+        void ReportDeployment(DEPLOYMENTINFO info);
+
+        callback_function callbackfunction;
+        std::vector<KEYVALUEPAIR> configInfo;
+        std::string downloadLocation;
+    };
 }

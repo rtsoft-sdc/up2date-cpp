@@ -1,16 +1,15 @@
 #pragma once
 #include "..\ddi\include\ddi.hpp"
 #include "dllexport.h"
+#include "CallbackDispatcher.hpp"
 
 namespace HkbClient {
 
-    typedef char* (*callback_function)(void);
-
 	extern "C" {
-		WDLL_EXPORT int TestFunction1(int, int);
-		WDLL_EXPORT int TestFunction2(const char* s);
-
-		//WDLL_EXPORT void __stdcall RunClient(const char* clientCertificatePath, const char* provisioningEndpoint, const char* xApigToken);
-		WDLL_EXPORT void RunClient(const char* clientCertificatePath, const char* provisioningEndpoint, const char* xApigToken, callback_function callback);
+	    WDLL_EXPORT CallbackDispatcher* CreateDispatcher(callback_function callback);
+	    WDLL_EXPORT void SetConfig(CallbackDispatcher* dispatcher, _KEYVALUEPAIR* keyvaluepairs, int size);
+		WDLL_EXPORT void SetDownloadLocation(CallbackDispatcher* dispatcher, const char* location);
+		WDLL_EXPORT void RunClient(const char* clientCertificatePath, const char* provisioningEndpoint, const char* xApigToken, CallbackDispatcher* dispatcher);
+	    WDLL_EXPORT void ReleaseDispatcher(CallbackDispatcher* dispatcher);
 	}
 }
