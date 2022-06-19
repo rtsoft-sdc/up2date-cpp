@@ -11,25 +11,18 @@ using namespace ddi;
 
 namespace HkbClient {
 
-    CallbackDispatcher* CreateDispatcher(callback_function callback)
+    CallbackDispatcher* CreateDispatcher(
+        ConfigRequestCallbackFunction configRequest, 
+        DeploymentActionCallbackFunction deploymentAction, 
+        CancelActionCallbackFunction cancelAction)
     {
-        auto dispatcher = new CallbackDispatcher(callback);
+        auto dispatcher = new CallbackDispatcher(configRequest, deploymentAction, cancelAction);
         return dispatcher;
     }
 
-    void SetConfig(CallbackDispatcher* dispatcher, _KEYVALUEPAIR* keyvaluepairs, int size)
+    void AddConfigAttribute(ddi::ConfigResponseBuilder* responseBuilder, const char* key, const char* value)
     {
-        std::vector<KEYVALUEPAIR> configInfo;
-        for(int i = 0; i < size; ++i)
-        {
-            configInfo.push_back(KEYVALUEPAIR { std::string(keyvaluepairs[i].key), std::string(keyvaluepairs[i].value) } );
-        }
-        dispatcher->SetConfig(configInfo);
-    }
-
-    void SetDownloadLocation(CallbackDispatcher* dispatcher, const char* location)
-    {
-        dispatcher->SetDownloadLocation(location);
+        responseBuilder->addData(key, value);
     }
 
     void DownloadArtifact(ddi::Artifact* artifact, const char* location)

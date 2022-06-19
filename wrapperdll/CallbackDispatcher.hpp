@@ -9,11 +9,6 @@ using namespace ddi;
 
 namespace HkbClient {
 
-    enum DownloadEventType {
-        STARTED,
-        FINISHED
-    };
-
     typedef struct
     {
         int id;
@@ -44,7 +39,9 @@ namespace HkbClient {
         std::string artifactFileHashSha256;
     } DEPLOYMENTINFO;
 
-    typedef bool (*callback_function)(ddi::Artifact* artifact, _DEPLOYMENTINFO info);
+    typedef void (*ConfigRequestCallbackFunction)(ddi::ConfigResponseBuilder* responseBuilder);
+    typedef bool (*DeploymentActionCallbackFunction)(ddi::Artifact* artifact, _DEPLOYMENTINFO info);
+    typedef bool (*CancelActionCallbackFunction)(int stopId);
 
     typedef struct 
     {
@@ -98,15 +95,19 @@ namespace HkbClient {
 
         ~CallbackDispatcher() = default;
 
-        CallbackDispatcher(callback_function callback) {
-            callbackfunction = callback;
+        CallbackDispatcher(ConfigRequestCallbackFunction _configRequest, DeploymentActionCallbackFunction _deploymentAction, CancelActionCallbackFunction _cancelAction) {
+            configRequest = _configRequest;
+            deploymentAction = _deploymentAction;
+            cancelAction = _cancelAction;
         };
 
     private:
 
         bool DeployArtifact(const std::shared_ptr<::Artifact> artifact, DEPLOYMENTINFO info);
 
-        callback_function callbackfunction;
+        ConfigRequestCallbackFunction configRequest;
+        DeploymentActionCallbackFunction deploymentAction;
+        CancelActionCallbackFunction cancelAction;
         std::vector<KEYVALUEPAIR> configInfo;
         std::string downloadLocation;
     };

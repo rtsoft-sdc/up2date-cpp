@@ -18,10 +18,7 @@ namespace HkbClient {
 
     std::unique_ptr<ConfigResponse> CallbackDispatcher::onConfigRequest() {
         auto builder = ConfigResponseBuilder::newInstance();
-        for (KEYVALUEPAIR kvp : configInfo)
-        {
-            builder->addData(kvp.key, kvp.value);
-        }
+        configRequest(builder.get());
 
         return builder->build();
     }
@@ -67,9 +64,11 @@ namespace HkbClient {
     }
 
     std::unique_ptr<Response> CallbackDispatcher::onCancelAction(std::unique_ptr<CancelAction> action) {
+        bool cancelled = cancelAction(action->getStopId());
+        
         return ResponseBuilder::newInstance()
                 ->setExecution(ddi::Response::CLOSED)
-                ->setFinished(ddi::Response::SUCCESS)
+                ->setFinished(cancelled ? ddi::Response::SUCCESS : ddi::Response::FAILURE)
                 ->addDetail("Some feedback")
                 ->addDetail("One more feedback")
                 ->addDetail("Really important feedback")
@@ -97,7 +96,7 @@ namespace HkbClient {
         callback_info.artifactFileHashSha1 = info.artifactFileHashSha1.c_str();
         callback_info.artifactFileHashSha256 = info.artifactFileHashSha256.c_str();
 
-        return callbackfunction(artifact.get(), callback_info);
+        return deploymentAction(artifact.get(), callback_info);
     }
 
 }
