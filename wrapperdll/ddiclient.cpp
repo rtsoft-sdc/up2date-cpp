@@ -32,6 +32,11 @@ namespace HkbClient {
         dispatcher->SetDownloadLocation(location);
     }
 
+    void DownloadArtifact(ddi::Artifact* artifact, const char* location)
+    {
+        artifact->downloadTo(location + artifact->getFilename());
+    }
+
     void RunClient(const char* clientCertificatePath, const char* provisioningEndpoint, const char* xApigToken, CallbackDispatcher* dispatcher) {
         std::ifstream t((std::string(clientCertificatePath)));
         if (!t.is_open()) {

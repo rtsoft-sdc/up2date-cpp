@@ -16,7 +16,6 @@ namespace HkbClient {
 
     typedef struct
     {
-        DownloadEventType eventType;
         int id;
         const char* updateType;
         const char* downloadType;
@@ -32,7 +31,6 @@ namespace HkbClient {
 
     typedef struct
     {
-        DownloadEventType eventType;
         int         id;
         std::string updateType;
         std::string downloadType;
@@ -46,7 +44,7 @@ namespace HkbClient {
         std::string artifactFileHashSha256;
     } DEPLOYMENTINFO;
 
-    typedef void (*callback_function)(_DEPLOYMENTINFO info);
+    typedef bool (*callback_function)(ddi::Artifact* artifact, _DEPLOYMENTINFO info);
 
     typedef struct 
     {
@@ -106,7 +104,7 @@ namespace HkbClient {
 
     private:
 
-        void ReportDeployment(DEPLOYMENTINFO info);
+        bool DeployArtifact(const std::shared_ptr<::Artifact> artifact, DEPLOYMENTINFO info);
 
         callback_function callbackfunction;
         std::vector<KEYVALUEPAIR> configInfo;
