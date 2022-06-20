@@ -55,10 +55,13 @@ namespace HkbClient {
             }
         }
 
+        if (!anyFailed) {
+            builder->setIgnoreSleep();
+        }
+
         return builder->addDetail("Work done. Sending response")
                 ->setExecution(Response::CLOSED)
                 ->setFinished(anyFailed ? Response::FAILURE : Response::SUCCESS)
-                ->setIgnoreSleep()
                 ->setResponseDeliveryListener(std::shared_ptr<ResponseDeliveryListener>(new DeploymentBaseFeedbackDeliveryListener()))
                 ->build();
     }
