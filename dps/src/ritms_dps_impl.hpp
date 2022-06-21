@@ -4,7 +4,7 @@
 
 #include "ritms_dps.hpp"
 #include "uriparse.hpp"
-#include "httplib.h"
+#include "httpclient.hpp"
 
 
 namespace ritms {
@@ -40,7 +40,7 @@ namespace ritms {
         class ProvisioningClient_impl : public ProvisioningClient {
             std::string crt;
             uri::URI provisioningURI;
-            httplib::Headers provisioningHeaders;
+            httpclient::Headers provisioningHeaders;
 
         public:
             std::string formatCertificateUpdatePayload();
@@ -52,7 +52,7 @@ namespace ritms {
         class CloudProvisioningClientBuilder_impl : public CloudProvisioningClientBuilder {
             std::string crt;
             uri::URI provisioningURI;
-            httplib::Headers provisioningHeaders;
+            httpclient::Headers provisioningHeaders;
 
         public:
 

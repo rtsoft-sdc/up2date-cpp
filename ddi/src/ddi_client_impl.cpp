@@ -1,4 +1,5 @@
 #include <chrono>
+#include <memory>
 #include <thread>
 #include <string>
 #include <utility>
@@ -71,25 +72,15 @@ namespace ddi {
         }
     }
 
-    httplib::Client HawkbitCommunicationClient::newHttpClient(uri::URI &hostEndpoint) const {
+    httpclient::Client HawkbitCommunicationClient::newHttpClient(uri::URI &hostEndpoint) const {
         // key pair auth
         if (mTLSKeypair.isSet) {
-            BIO *bio_crt = BIO_new(BIO_s_mem());
-            BIO_puts(bio_crt, mTLSKeypair.crt.c_str());
-            X509 *certificate = PEM_read_bio_X509(bio_crt, nullptr, nullptr, nullptr);
-            BIO_free(bio_crt);
-
-            BIO *bio_key = BIO_new(BIO_s_mem());
-            BIO_puts(bio_key, mTLSKeypair.key.c_str());
-            EVP_PKEY *key = PEM_read_bio_PrivateKey(bio_key, nullptr, nullptr, nullptr);
-            BIO_free(bio_key);
-
-
-            return httplib::Client(hostEndpoint.getScheme() + "://" + hostEndpoint.getAuthority(),
-                                   certificate, key);
+            return httpclient::Client(
+                hostEndpoint.getScheme() + "://" + hostEndpoint.getAuthority(),
+                std::make_unique<httpclient::mTLSKeyPair>(mTLSKeypair.crt, mTLSKeypair.key));
         }
 
-        auto cli = httplib::Client(hostEndpoint.getScheme() + "://" + hostEndpoint.getAuthority());
+        auto cli = httpclient::Client(hostEndpoint.getScheme() + "://" + hostEndpoint.getAuthority());
         cli.enable_server_certificate_verification(serverCertificateVerify);
 
         return cli;
@@ -150,7 +141,7 @@ namespace ddi {
         rapidjson::Writer<rapidjson::StringBuffer> writer(buf);
         document.Accept(writer);
 
-        retryHandler(followURI, [&](httplib::Client &cli) {
+        retryHandler(followURI, [&](httpclient::Client &cli) {
             return cli.Put(followURI.getPath().c_str(), defaultHeaders, buf.GetString(), "application/json");
         });
 
@@ -169,10 +160,9 @@ namespace ddi {
     }
 
     void HawkbitCommunicationClient::followCancelAction(uri::URI &followURI) {
-        auto resp = retryHandler(followURI, [&](httplib::Client &cli) {
+        auto resp = retryHandler(followURI, [&](httpclient::Client &cli) {
             return cli.Get(followURI.getPath().c_str(), defaultHeaders);
         });
-
         auto cancelAction = CancelAction_::fromString(resp->body);
         auto actionId = cancelAction->getId();
         auto cliResp = handler->onCancelAction(std::move(cancelAction));
@@ -186,7 +176,7 @@ namespace ddi {
         rapidjson::Writer<rapidjson::StringBuffer> writer(buf);
         document.Accept(writer);
         try {
-            retryHandler(followURI, [&](httplib::Client &cli) {
+            retryHandler(followURI, [&](httpclient::Client &cli) {
                 return cli.Post(formatFeedbackPath(
                         followURI).c_str(), defaultHeaders, buf.GetString(), "application/json");
             });
@@ -207,7 +197,7 @@ namespace ddi {
     }
 
     void HawkbitCommunicationClient::followDeploymentBase(uri::URI &followURI) {
-        auto resp = retryHandler(followURI, [&](httplib::Client &cli) {
+        auto resp = retryHandler(followURI, [&](httpclient::Client &cli) {
             return cli.Get(followURI.getPath().c_str(), defaultHeaders);
         });
 
@@ -223,7 +213,7 @@ namespace ddi {
         rapidjson::Writer<rapidjson::StringBuffer> writer(buf);
         document.Accept(writer);
         try {
-            retryHandler(followURI, [&](httplib::Client &cli) {
+            retryHandler(followURI, [&](httpclient::Client &cli) {
                 return cli.Post(
                         formatFeedbackPath(followURI).c_str(), defaultHeaders, buf.GetString(), "application/json");
             });
@@ -246,7 +236,7 @@ namespace ddi {
     void HawkbitCommunicationClient::doPoll() {
         // firstly do GET request to default endpoint. hawkBit send meta for next poll and
         //  action list to follow
-        auto resp = retryHandler(hawkbitURI, [&](httplib::Client &cli) {
+        auto resp = retryHandler(hawkbitURI, [&](httpclient::Client &cli) {
             return cli.Get(hawkbitURI.getPath().c_str(), defaultHeaders);
         });
         auto polingData = PollingData_::fromString(resp->body);
@@ -267,9 +257,9 @@ namespace ddi {
 
     void HawkbitCommunicationClient::downloadTo(uri::URI downloadURI, const std::string &path) {
         std::ofstream file(path, std::ios::binary);
-        retryHandler(downloadURI, [&](httplib::Client &cli) {
+        retryHandler(downloadURI, [&](httpclient::Client &cli) {
             return cli.Get(downloadURI.getPath().c_str(), defaultHeaders,
-                           [](const httplib::Response &r) {
+                           [](const httpclient::Response &r) {
                                checkHttpCode(r.status, HTTP_OK);
                                return true;
                            },
@@ -283,16 +273,16 @@ namespace ddi {
     }
 
     std::string HawkbitCommunicationClient::getBody(uri::URI downloadURI) {
-        return retryHandler(downloadURI, [&](httplib::Client &cli) {
+        return retryHandler(downloadURI, [&](httpclient::Client &cli) {
             return cli.Get(downloadURI.getPath().c_str(), defaultHeaders);
         })->body;
     }
 
     void HawkbitCommunicationClient::downloadWithReceiver(uri::URI downloadURI,
                                                           std::function<bool(const char *, size_t)> func) {
-        retryHandler(downloadURI, [&](httplib::Client &cli) {
+        retryHandler(downloadURI, [&](httpclient::Client &cli) {
             return cli.Get(downloadURI.getPath().c_str(), defaultHeaders,
-                           [](const httplib::Response &r) {
+                           [](const httpclient::Response &r) {
                                checkHttpCode(r.status, HTTP_OK);
                                return true;
                            }, func
@@ -301,19 +291,19 @@ namespace ddi {
 
     }
 
-    httplib::Result HawkbitCommunicationClient::wrappedRequest(uri::URI reqUri, const std::function<httplib::Result(
-            httplib::Client &)> &func) {
+    httpclient::Result HawkbitCommunicationClient::wrappedRequest(uri::URI reqUri, const std::function<httpclient::Result(
+            httpclient::Client &)> &func) {
         auto cli = newHttpClient(reqUri);
         auto resp = func(cli);
-        if (resp.error() != httplib::Error::Success) {
+        if (resp.error() != httpclient::Error::Success) {
             throw http_lib_error((int) resp.error());
         }
         checkHttpCode(resp->status, HTTP_OK);
         return resp;
     }
 
-    httplib::Result HawkbitCommunicationClient::retryHandler(uri::URI reqUri, const std::function<httplib::Result(
-            httplib::Client &)> &func) {
+    httpclient::Result HawkbitCommunicationClient::retryHandler(uri::URI reqUri, const std::function<httpclient::Result(
+            httpclient::Client &)> &func) {
         try {
             return wrappedRequest(reqUri, func);
         } catch (unauthorized_exception &e) {

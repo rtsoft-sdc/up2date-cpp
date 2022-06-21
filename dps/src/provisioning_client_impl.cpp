@@ -2,7 +2,7 @@
 
 #include "ritms_dps_impl.hpp"
 #include "ritms_exceptions.hpp"
-#include "httplib.h"
+#include "httpclient.hpp"
 
 #define RAPIDJSON_HAS_STDSTRING 1
 
@@ -27,11 +27,11 @@ namespace ritms {
         }
 
         std::unique_ptr<ProvisioningData> ProvisioningClient_impl::doProvisioning() {
-            auto resp = httplib::Client(provisioningURI.getScheme() +
+            auto resp = httpclient::Client(provisioningURI.getScheme() +
                                         "://" + provisioningURI.getAuthority())
                     .Post(provisioningURI.getPath().c_str(), provisioningHeaders,
                           formatCertificateUpdatePayload(), "application/json");
-            if (resp.error() != httplib::Error::Success) {
+            if (resp.error() != httpclient::Error::Success) {
                 throw httplib_error((int)resp.error());
             }
             if (resp->status != HTTP_OK && resp->status != HTTP_CREATED) {

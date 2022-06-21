@@ -3,12 +3,12 @@
 #include <string>
 #include <memory>
 
-#include "httplib.h"
 #include "uriparse.hpp"
 #include "ddi/hawkbit_event_handler.hpp"
 #include "ddi/hawkbit_exceptions.hpp"
 #include "actions_impl.hpp"
 #include "ddi/ddi_client.hpp"
+#include "httpclient.hpp"
 
 namespace ddi {
 
@@ -18,7 +18,7 @@ namespace ddi {
     protected:
         uri::URI hawkbitURI;
 
-        httplib::Headers defaultHeaders;
+        httpclient::Headers defaultHeaders;
 
         std::shared_ptr<EventHandler> handler;
         std::shared_ptr<AuthErrorHandler> authErrorHandler;
@@ -50,12 +50,12 @@ namespace ddi {
         void followDeploymentBase(uri::URI &);
 
         // all requests should go via retryHandler
-        httplib::Result wrappedRequest(uri::URI, const std::function<httplib::Result(httplib::Client &)> &);
+        httpclient::Result wrappedRequest(uri::URI, const std::function<httpclient::Result(httpclient::Client &)> &);
 
-        httplib::Result retryHandler(uri::URI, const std::function<httplib::Result(httplib::Client &)> &);
+        httpclient::Result retryHandler(uri::URI, const std::function<httpclient::Result(httpclient::Client &)> &);
 
         // creates httpClient with predefined params
-        httplib::Client newHttpClient(uri::URI &) const;
+        httpclient::Client newHttpClient(uri::URI &) const;
 
     public:
 
@@ -86,7 +86,7 @@ namespace ddi {
 
         int pollingTimeout = 30000;
 
-        httplib::Headers defaultHeaders;
+        httpclient::Headers defaultHeaders;
 
         std::shared_ptr<AuthErrorHandler> authErrorHandler;
         std::shared_ptr<EventHandler> handler;
