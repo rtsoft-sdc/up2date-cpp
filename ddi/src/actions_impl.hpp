@@ -3,7 +3,7 @@
 #include <memory>
 #include "ddi/hawkbit_actions.hpp"
 #include "uriparse.hpp"
-#include "../../modules/src/httplib.h"
+#include "httpclient.hpp"
 
 namespace ddi {
     // Define actions from hawkBit

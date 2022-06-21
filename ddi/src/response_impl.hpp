@@ -1,3 +1,4 @@
+#pragma once
 #include "ddi/hawkbit_response.hpp"
 
 namespace ddi {
