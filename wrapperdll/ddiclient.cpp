@@ -24,14 +24,14 @@ namespace HkbClient {
         artifact->downloadTo(location + artifact->getFilename());
     }
 
-    void RunClient(const char* clientCertificate, const char* provisioningEndpoint, const char* xApigToken, CallbackDispatcher* dispatcher) {
+    void RunClient(const char* clientCertificate, const char* provisioningEndpoint, const char* xApigToken, CallbackDispatcher* dispatcher, AuthErrorCallbackFunction authErrorAction) {
         auto dpsBuilder = CloudProvisioningClientBuilder::newInstance();
         auto dpsClient = dpsBuilder->setEndpoint(provisioningEndpoint)
             ->setAuthCrt(clientCertificate)
             ->addHeader("X-Apig-AppCode", std::string(xApigToken))
             ->build();
 
-        auto authErrorHandler = std::shared_ptr<AuthErrorHandler>(new DPSInfoReloadHandler(std::move(dpsClient)));
+        auto authErrorHandler = std::shared_ptr<AuthErrorHandler>(new DPSInfoReloadHandler(std::move(dpsClient), authErrorAction));
 
 
         auto builder = DDIClientBuilder::newInstance();
