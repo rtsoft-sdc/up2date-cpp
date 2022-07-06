@@ -65,6 +65,8 @@ namespace ritms {
 
             ///\brief Get ritms::dps::ProvisioningClient instance.
             virtual std::unique_ptr<ProvisioningClient> build() = 0;
+
+            virtual ~CloudProvisioningClientBuilder() = default;
         };
 
     }
