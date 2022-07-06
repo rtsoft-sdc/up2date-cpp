@@ -217,6 +217,8 @@ using socket_t = int;
 #include <sys/stat.h>
 #include <thread>
 
+#include "httpclient_def.h"
+
 #ifdef CPPHTTPLIB_OPENSSL_SUPPORT
 // these are defined in wincrypt.h and it breaks compilation if BoringSSL is
 // used
@@ -264,6 +266,7 @@ inline const unsigned char *ASN1_STRING_get0_data(const ASN1_STRING *asn1) {
  * Declaration
  */
 namespace httplib {
+using Error = httpclient::Error;
 
 namespace detail {
 
@@ -308,7 +311,7 @@ using Match = std::smatch;
 using Progress = std::function<bool(uint64_t current, uint64_t total)>;
 
 struct Response;
-using ResponseHandler = std::function<bool(const Response &response)>;
+using ResponseHandler = std::function<bool(const Response &response)>;;
 
 struct MultipartFormData {
   std::string name;
@@ -363,8 +366,7 @@ using ContentReceiverWithProgress =
     std::function<bool(const char *data, size_t data_length, uint64_t offset,
                        uint64_t total_length)>;
 
-using ContentReceiver =
-    std::function<bool(const char *data, size_t data_length)>;
+using ContentReceiver = std::function<bool(const char *data, size_t data_length)>;
 
 using MultipartContentHeader =
     std::function<bool(const MultipartFormData &file)>;
@@ -784,22 +786,6 @@ private:
   SocketOptions socket_options_ = default_socket_options;
 
   Headers default_headers_;
-};
-
-enum class Error {
-  Success = 0,
-  Unknown,
-  Connection,
-  BindIPAddress,
-  Read,
-  Write,
-  ExceedRedirectCount,
-  Canceled,
-  SSLConnection,
-  SSLLoadingCerts,
-  SSLServerVerification,
-  UnsupportedMultipartBoundaryChars,
-  Compression,
 };
 
 std::string to_string(const Error error);

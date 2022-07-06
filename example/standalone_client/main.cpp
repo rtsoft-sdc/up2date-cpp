@@ -1,3 +1,4 @@
+#define USE_DEFAULT_HTTPLIB
 #include "basic_handler.hpp"
 
 const char *GATEWAY_TOKEN_ENV_NAME = "GATEWAY_TOKEN";
