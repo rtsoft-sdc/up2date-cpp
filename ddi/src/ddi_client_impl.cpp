@@ -141,6 +141,7 @@ namespace ddi {
         }
 
         document.AddMember("data", data, document.GetAllocator());
+        document.AddMember("mode", ConfigResponse::modeToString(req->getMode()), document.GetAllocator());
         auto builder = ResponseBuilder::newInstance();
         auto resp = builder->setFinished(Response::SUCCESS)->setExecution(Response::CLOSED)->build();
 
