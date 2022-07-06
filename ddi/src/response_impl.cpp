@@ -66,10 +66,17 @@ namespace ddi {
 
 
     bool ConfigResponseImpl::isIgnoredSleep() {
+
         return ignoreSleep;
     }
 
+    ConfigResponse::Mode ConfigResponseImpl::getMode() {
+
+        return mode;
+    }
+
     std::map<std::string, std::string> ConfigResponseImpl::getData() {
+
         return data;
     }
 
@@ -78,6 +85,13 @@ namespace ddi {
 
         return this;
     }
+
+    ConfigResponseBuilder *ConfigResponseBuilderImpl::setMode(ConfigResponse::Mode mode_) {
+        mode = mode_;
+
+        return this;
+    }
+
 
     ConfigResponseBuilder *ConfigResponseBuilderImpl::addData(const std::string &key, const std::string &value) {
         data.insert({key, value});
@@ -89,6 +103,8 @@ namespace ddi {
         auto configResponse = new ConfigResponseImpl();
         configResponse->data = data;
         configResponse->ignoreSleep = ignoreSleep;
+        configResponse->mode = mode;
+
         return std::unique_ptr<ConfigResponse>(configResponse);
     }
 

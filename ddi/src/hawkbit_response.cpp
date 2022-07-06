@@ -55,4 +55,21 @@ namespace ddi {
         throw std::exception();
     }
 
+    const char *MERGE_MODE = "merge";
+    const char *REPLACE_MODE = "replace";
+    const char *REMOVE_MODE ="remove";
+
+    std::string ConfigResponse::modeToString(Mode mode) {
+        switch (mode) {
+            case MERGE:
+                return MERGE_MODE;
+            case REPLACE:
+                return REPLACE_MODE;
+            case REMOVE:
+                return REMOVE_MODE;
+        }
+        // should not happen
+        throw std::exception();
+    }
+
 }

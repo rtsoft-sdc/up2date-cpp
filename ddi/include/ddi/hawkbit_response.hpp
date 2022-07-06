@@ -104,10 +104,20 @@ namespace ddi {
     /// @note Use ddi::ConfigResponseBuilder to create ddi::ConfigResponse instance.
     class ConfigResponse {
     public:
+        enum Mode {
+            MERGE,
+            REPLACE,
+            REMOVE
+        };
         // Next methods should not be used by user code (they are not documented).
         // ----------------------------------------------------------------
         /// @note should not be used by user code.
         virtual std::map<std::string, std::string> getData() = 0;
+
+        static std::string modeToString(Mode mode);
+
+        /// @note should not be used by user code.
+        virtual Mode getMode() = 0;
 
         /// @note should not be used by user code.
         virtual bool isIgnoredSleep() = 0;
@@ -129,6 +139,10 @@ namespace ddi {
         ///\brief If this flag is set, next action will be received without wait polling interval.
         /// @note Is very useful when have many actions in queue.
         virtual ConfigResponseBuilder *setIgnoreSleep() = 0;
+
+        ///\brief set config store mode (check ddi api docks)
+        /// @note default merge
+        virtual ConfigResponseBuilder *setMode(ConfigResponse::Mode mode) = 0;
 
         ///\brief Build ddi::ConfigResponse.
         virtual std::unique_ptr<ConfigResponse> build() = 0;

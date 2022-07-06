@@ -50,26 +50,32 @@ namespace ddi {
     class ConfigResponseImpl : public ConfigResponse {
         std::map<std::string, std::string> data;
         bool ignoreSleep = false;
+        ConfigResponse::Mode mode;
 
         friend class ConfigResponseBuilderImpl;
 
     public:
         std::map<std::string, std::string> getData() override;
 
+        ConfigResponse::Mode getMode() override;
+
         bool isIgnoredSleep() override;
     };
 
     class ConfigResponseBuilderImpl : public ConfigResponseBuilder {
         std::map<std::string, std::string> data;
-
+        ConfigResponse::Mode mode = ConfigResponse::MERGE;
         bool ignoreSleep = false;
 
     public:
 
         ConfigResponseBuilder *addData(const std::string &, const std::string &) override;
 
+        ConfigResponseBuilder *setMode( ConfigResponse::Mode mode ) override;
+
         ConfigResponseBuilder *setIgnoreSleep() override;
 
         std::unique_ptr<ConfigResponse> build() override;
     };
+
 }
