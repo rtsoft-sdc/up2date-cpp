@@ -39,9 +39,9 @@ namespace HkbClient {
         std::string artifactFileHashSha256;
     } DEPLOYMENTINFO;
 
-    typedef void (*ConfigRequestCallbackFunction)(ddi::ConfigResponseBuilder* responseBuilder);
-    typedef bool (*DeploymentActionCallbackFunction)(ddi::Artifact* artifact, _DEPLOYMENTINFO info);
-    typedef bool (*CancelActionCallbackFunction)(int stopId);
+    typedef void (__stdcall *ConfigRequestCallbackFunction)(ddi::ConfigResponseBuilder* responseBuilder);
+    typedef bool (__stdcall *DeploymentActionCallbackFunction)(ddi::Artifact* artifact, _DEPLOYMENTINFO info);
+    typedef bool (__stdcall *CancelActionCallbackFunction)(int stopId);
 
     typedef struct 
     {

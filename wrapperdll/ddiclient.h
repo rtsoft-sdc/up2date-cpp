@@ -6,7 +6,7 @@
 
 namespace HkbClient {
 
-    typedef bool (*AuthErrorCallbackFunction)(const char* errorMessage);
+    typedef bool (__stdcall *AuthErrorCallbackFunction)(const char* errorMessage);
 
 	extern "C" {
 	    WDLL_EXPORT CallbackDispatcher* CreateDispatcher(
