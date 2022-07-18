@@ -2,8 +2,8 @@
 
 #include <iostream>
 #include <thread>
-#include "..\dps\include\ritms_dps.hpp"
-#include "..\ddi\include\ddi.hpp"
+#include "ritms_dps.hpp"
+#include "ddi.hpp"
 
 using namespace ritms::dps;
 using namespace ddi;

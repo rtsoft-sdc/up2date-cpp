@@ -2,8 +2,8 @@
 #include <thread>
 #include "pch.h"
 #include "ddiclient.h"
-#include "..\ddi\include\ddi.hpp"
-#include "..\dps\include\ritms_dps.hpp"
+#include "ddi.hpp"
+#include "ritms_dps.hpp"
 #include "DPSInfoReloadHandler.hpp"
 
 namespace HkbClient {

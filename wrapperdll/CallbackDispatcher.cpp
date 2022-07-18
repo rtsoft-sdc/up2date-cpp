@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "..\ddi\include\ddi.hpp"
+#include "ddi.hpp"
 #include "CallbackDispatcher.hpp"
 
 using namespace ddi;
