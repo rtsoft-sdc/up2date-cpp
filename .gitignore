@@ -8,3 +8,4 @@ cert/password
 /*.conf
 vcpkg_*
 html
+/.vs
