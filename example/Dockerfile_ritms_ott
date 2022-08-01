@@ -1,0 +1,7 @@
+ARG VARIANT="bullseye-slim"
+FROM debian:${VARIANT}
+
+COPY build/example/ritms_ott/ritms_ott /opt/up2date
+
+WORKDIR /opt
+ENTRYPOINT ["/opt/up2date"]
