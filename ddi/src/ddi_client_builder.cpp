@@ -1,3 +1,4 @@
+#include <stdexcept>
 #include "ddi/ddi_client.hpp"
 #include "ddi_client_impl.hpp"
 #include "uriparse.hpp"
