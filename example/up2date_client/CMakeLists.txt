@@ -1,4 +1,4 @@
-project(up2date_cli)
+project(up2date_client)
 
 add_executable(${PROJECT_NAME} main.cpp)
 

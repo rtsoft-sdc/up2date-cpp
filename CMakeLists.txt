@@ -8,9 +8,35 @@ endif()
 
 project(up2date-cpp)
 
+# -- HTTP_CLIENT implementation type --
+set(U2D_DEFAULT_HTTP_CLIENT_IMPL UNIX WIN ESP32)
+set(U2D_SUPPORTED_HTTP_CLIENT_IMPL ${U2D_DEFAULT_HTTP_CLIENT_IMPL} NONE AUTO)
+
+set(U2D_HTTP_CLIENT_IMPL "AUTO" CACHE STRING "up2date http client implementation")
+set_property(CACHE U2D_HTTP_CLIENT_IMPL PROPERTY STRINGS ${U2D_SUPPORTED_HTTP_CLIENT_IMPL})
+
+list(FIND U2D_SUPPORTED_HTTP_CLIENT_IMPL ${U2D_HTTP_CLIENT_IMPL} index)
+if(index EQUAL -1)
+    message(FATAL_ERROR "U2D_HTTP_CLIENT_IMPL must be one of ${U2D_SUPPORTED_HTTP_CLIENT_IMPL}")
+endif()
+
+# -- + --
+
+option(BUILD_EXAMPLES "Build examples" OFF)
+option(BUILD_DPS "Build module for communication with RITMS provisioning service" ON)
+
 # Add sub directories
+# - external dependencies
 add_subdirectory(deps)
+# - shared modules
 add_subdirectory(modules)
-add_subdirectory(dps)
+# - ddi api
 add_subdirectory(ddi)
-add_subdirectory(example)
+# - ritms up2date communication api
+if (BUILD_DPS)
+    add_subdirectory(dps)
+endif()
+
+if (BUILD_EXAMPLES)
+    add_subdirectory(example)
+endif()
