@@ -8,9 +8,8 @@ endif()
 
 project(up2date-cpp)
 
-option(BUILD_WINDOWS_DLL "Enable building DLL for Windows" OFF)
-
 # Add sub directories
+add_subdirectory(deps)
 add_subdirectory(modules)
 add_subdirectory(dps)
 add_subdirectory(ddi)

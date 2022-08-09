@@ -98,7 +98,7 @@ public:
         std::cout << "No actions from hawkBit" << std::endl;
     }
 
-    ~Handler() = default;
+    ~Handler() override = default;
 
     Handler() = default;
 };

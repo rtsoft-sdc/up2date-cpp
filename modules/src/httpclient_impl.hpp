@@ -7,7 +7,7 @@ namespace httpclient {
     class HttpLibClientImpl : public ClientImpl {
         httplib::Client cli;
     public:
-        HttpLibClientImpl(httplib::Client cli_) : cli(std::move(cli_)) {};
+        explicit HttpLibClientImpl(httplib::Client cli_) : cli(std::move(cli_)) {};
 
         Result Get(const char *path, const Headers &headers) override;
 

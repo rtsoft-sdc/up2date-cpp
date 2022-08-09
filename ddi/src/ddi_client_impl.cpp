@@ -314,7 +314,7 @@ namespace ddi {
                     std::make_unique<AuthRestoreHandler_>(this));
         }
 
-        return wrappedRequest(reqUri, func);;
+        return wrappedRequest(reqUri, func);
     }
 
     void HawkbitCommunicationClient::setTLS(const std::string &crt, const std::string &key) {
