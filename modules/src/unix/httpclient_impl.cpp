@@ -11,6 +11,7 @@ namespace httpclient {
     }
 
     httplib::Headers toHttpLibHeaders(const Headers& headers) {
+
         return {headers.begin(), headers.end()};
     }
 
@@ -21,6 +22,7 @@ namespace httpclient {
 
     Result HttpLibClientImpl::Get(const char *path, const Headers &headers, HttpClientResponseHandler response_handler,
                                   HttpClientContentReceiver content_receiver) {
+
         return toHttpLibResult(cli.Get(path, toHttpLibHeaders(headers),
                                        [&response_handler](const httplib::Response &r) {
             return response_handler(Response(r.status, ""));
@@ -34,14 +36,17 @@ namespace httpclient {
 
     Result HttpLibClientImpl::Put(const char *path, const Headers &headers, const std::string &body,
                                   const char *content_type) {
+
         return toHttpLibResult(cli.Put(path, toHttpLibHeaders(headers), body, content_type));
     }
 
     void HttpLibClientImpl::enable_server_certificate_verification(bool b) {
+
         this->cli.enable_server_certificate_verification(b);
     }
 
     Client::Client(const std::string& endpoint) {
+
         client_ = std::make_unique<HttpLibClientImpl>(httplib::Client(endpoint));
     }
 
