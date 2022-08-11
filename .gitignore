@@ -1,6 +1,5 @@
 build
 .idea
-cmake-build-debug
 /cert/*.crt
 /cert/*.key
 .scannerwork
@@ -9,3 +8,4 @@ cert/password
 vcpkg_*
 html
 /.vs
+cmake-build-*

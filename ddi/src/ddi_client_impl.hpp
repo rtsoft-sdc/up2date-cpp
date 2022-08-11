@@ -12,7 +12,7 @@
 
 namespace ddi {
 
-    struct PollingData_;
+    class PollingData_;
 
     class HawkbitCommunicationClient : public DownloadProvider, public Client, public AuthRestoreHandler {
     protected:
