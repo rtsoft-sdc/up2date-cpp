@@ -5,39 +5,37 @@
 #include <WinInet.h>
 
 
-#pragma comment (lib, "Wininet.lib")
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 struct request_config {
-    LPCSTR scheme;
-    LPCSTR host;
-    LPCSTR path;
-    LPCSTR method;
+    LPCSTR szScheme;
+    LPCSTR szHost;
+    LPCSTR szPath;
+    LPCSTR szMethod;
 
-    LPCSTR headers;
-    DWORD headersSize;
+    LPCSTR szHeaders;
+    DWORD dwHeadersSize;
 
-    LPVOID body;
-    DWORD bodySize;
+    LPVOID pvBody;
+    DWORD dwBodySize;
 
-    BOOL verifyServerCrt;
+    BOOL bVerifyServerCrt;
 
-    BOOL (*retCodeHandler)(INT code, LPVOID ctx);
-    LPVOID retCodeHandlerCtx;
+    BOOL (*pfRetCodeHandler)(INT code, LPVOID ctx);
+    LPVOID pvRetCodeHandlerCtx;
 
-    BOOL (*contentReceiver)(LPCH data, DWORD dataRead, LPVOID ctx);
-    LPVOID contentReceiverCtx;
+    BOOL (*pfContentReceiver)(LPCH data, DWORD dataRead, LPVOID ctx);
+    LPVOID pvContentReceiverCtx;
 };
 
 struct mtls_keypair {
-    LPSTR crt;
-    DWORD crtSize;
+    LPCSTR cszCrt;
+    DWORD dwCrtSize;
 
-    LPSTR key;
-    DWORD keySize;
+    LPCSTR cszKey;
+    DWORD dwKeySize;
 };
 
 

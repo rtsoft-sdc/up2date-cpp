@@ -72,7 +72,7 @@ namespace httpclient {
     class Client {
         std::unique_ptr<ClientImpl> client_;
     public:
-        explicit Client(std::string endpoint, std::unique_ptr<mTLSKeyPair>);
+        explicit Client(const std::string& endpoint, std::unique_ptr<mTLSKeyPair>);
         explicit Client(const std::string& endpoint);
 
         Result Get(const char *path, const Headers &headers) {

@@ -69,26 +69,37 @@ namespace httpclient {
 
         struct request_config config{};
 
-        config.verifyServerCrt = (serverVerify) ? TRUE : FALSE;
+        config.bVerifyServerCrt = (serverVerify) ? TRUE : FALSE;
 
-        config.scheme = scheme.c_str();
-        config.path = path;
+        config.szScheme = scheme.c_str();
+        config.szPath = path;
 
-        config.host = host.c_str();
+        config.szHost = host.c_str();
 
-        config.headers = headersEncoded.c_str();
-        config.headersSize = headersEncoded.size();
+        config.szHeaders = headersEncoded.c_str();
+        config.dwHeadersSize = headersEncoded.size();
 
-        config.body = (LPVOID) body;
-        config.bodySize = bodySize;
+        config.pvBody = (LPVOID) body;
+        config.dwBodySize = bodySize;
 
-        config.retCodeHandler = retCodeHandler;
-        config.retCodeHandlerCtx = retCodeHandlerCtx;
+        config.pfRetCodeHandler = retCodeHandler;
+        config.pvRetCodeHandlerCtx = retCodeHandlerCtx;
 
-        config.contentReceiver = contentReceiver;
-        config.contentReceiverCtx = contentReceiverCtx;
+        config.pfContentReceiver = contentReceiver;
+        config.pvContentReceiverCtx = contentReceiverCtx;
 
-        config.method = method;
+        config.szMethod = method;
+
+
+        if (kp) {
+            struct mtls_keypair keypair{};
+            keypair.cszKey = kp->key.c_str();
+            keypair.dwKeySize = kp->key.size();
+            keypair.cszCrt = kp->crt.c_str();
+            keypair.dwCrtSize = kp->crt.size();
+
+            return (int) do_http_request_mtls(&config, &keypair);
+        }
 
         return (int) do_http_request(&config);
     }
@@ -189,15 +200,18 @@ namespace httpclient {
         serverVerify = b;
     }
 
-    WINHttpLibClientImpl::WINHttpLibClientImpl(const std::string &endpoint) {
+    WINHttpLibClientImpl::WINHttpLibClientImpl(const std::string &endpoint, std::unique_ptr<mTLSKeyPair> kp_) {
         baseAddress = uri::URI::fromString(endpoint);
+        if (kp_ != nullptr) {
+            kp = std::move(kp_);
+        }
     }
 
     Client::Client(const std::string &endpoint) {
-        client_ = std::make_unique<WINHttpLibClientImpl>(endpoint);
+        client_ = std::make_unique<WINHttpLibClientImpl>(endpoint, nullptr);
     }
 
-    Client::Client(std::string endpoint, std::unique_ptr<mTLSKeyPair> kp) {
-        client_ = std::make_unique<WINHttpLibClientImpl>(endpoint);
+    Client::Client(const std::string& endpoint, std::unique_ptr<mTLSKeyPair> kp_) {
+        client_ = std::make_unique<WINHttpLibClientImpl>(endpoint, std::move(kp_));
     }
 }

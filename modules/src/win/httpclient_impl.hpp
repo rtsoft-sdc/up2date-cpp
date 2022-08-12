@@ -8,7 +8,7 @@ namespace httpclient {
 
     class WINHttpLibClientImpl : public ClientImpl {
         uri::URI baseAddress;
-
+        std::unique_ptr<mTLSKeyPair> kp = nullptr;
         bool serverVerify = true;
 
         int doHttpWinRequest(const char* method,
@@ -21,7 +21,7 @@ namespace httpclient {
                              const char *body, DWORD bodySize);
 
     public:
-        explicit WINHttpLibClientImpl(const std::string &endpoint);
+        explicit WINHttpLibClientImpl(const std::string &endpoint, std::unique_ptr<mTLSKeyPair> kp_);
 
         Result Get(const char *path, const Headers &headers) override;
 
