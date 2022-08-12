@@ -9,6 +9,8 @@ namespace httpclient {
     class WINHttpLibClientImpl : public ClientImpl {
         uri::URI baseAddress;
 
+        bool serverVerify = true;
+
         int doHttpWinRequest(const char* method,
                              const char *path,
                              const Headers &headers,

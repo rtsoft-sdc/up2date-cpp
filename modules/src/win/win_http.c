@@ -4,8 +4,13 @@
 
 #define DEFAULT_DOWNLOAD_BUF_SIZE 2048
 
-
 DWORD do_http_request(const struct request_config* config) {
+
+    return do_http_request_mtls(config, NULL);
+}
+
+
+DWORD do_http_request_mtls(const struct request_config * config, const struct mtls_keypair* kp){
     DWORD code = 0;
     HINTERNET hSession = NULL;
     HINTERNET hConnect = NULL;
@@ -66,8 +71,12 @@ DWORD do_http_request(const struct request_config* config) {
     }
 
     DWORD flags = INTERNET_FLAG_DONT_CACHE | INTERNET_FLAG_PRAGMA_NOCACHE | INTERNET_FLAG_RELOAD;
-    if (isHttps)
+    if (isHttps){
         flags |= INTERNET_FLAG_SECURE;
+        if (!config->verifyServerCrt) {
+            flags |= INTERNET_FLAG_IGNORE_CERT_CN_INVALID | INTERNET_FLAG_IGNORE_CERT_CN_INVALID;
+        }
+    }
 
     hRequest = HttpOpenRequestA(
             hConnect,

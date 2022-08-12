@@ -69,6 +69,8 @@ namespace httpclient {
 
         struct request_config config{};
 
+        config.verifyServerCrt = (serverVerify) ? TRUE : FALSE;
+
         config.scheme = scheme.c_str();
         config.path = path;
 
@@ -94,16 +96,16 @@ namespace httpclient {
     Result WINHttpLibClientImpl::Get(const char *path, const Headers &headers) {
 
         int statusCode = 0;
-        std::string resp = "";
+        std::string resp;
 
 
         int res = doHttpWinRequest(
                 "GET", path, headers, &simpleStatusCodeReader, &statusCode,
-                &stringDataReader, &resp, NULL, 0
+                &stringDataReader, &resp, nullptr, 0
         );
 
         if (res != 0) {
-            std::cerr << "Error HTTP request with WIN API " << res << std::endl;
+            std::cerr << "Error Get HTTP request with WIN API " << res << std::endl;
         }
 
         return {
@@ -120,11 +122,11 @@ namespace httpclient {
 
         int res = doHttpWinRequest(
                 "GET", path, headers, &cbStatusCodeReader, &handler,
-                &cbDataReader, &content_receiver, NULL, 0
+                &cbDataReader, &content_receiver, nullptr, 0
         );
 
         if (res != 0) {
-            std::cerr << "Error HTTP request with WIN API " << res << std::endl;
+            std::cerr << "Error Get(cb) HTTP request with WIN API " << res << std::endl;
         }
 
         return {
@@ -136,25 +138,55 @@ namespace httpclient {
     Result WINHttpLibClientImpl::Post(const char *path, const Headers &headers, const std::string &body,
                                       const char *content_type) {
 
-        // TODO: implement
+        int statusCode = 0;
+        std::string resp;
+
+        Headers ctiHeaders = headers;
+        ctiHeaders.insert({"Content-Type", content_type});
+
+
+        int res = doHttpWinRequest(
+                "POST", path, ctiHeaders, &simpleStatusCodeReader, &statusCode,
+                &stringDataReader, &resp, body.c_str(), body.size()
+        );
+
+        if (res != 0) {
+            std::cerr << "Error Post HTTP request with WIN API " << res << std::endl;
+        }
+
         return {
-                std::make_unique<Response>(0, ""),
-                Error::Success
+                std::make_unique<Response>(statusCode, resp),
+                (res == 0) ? Error::Success : Error::Unknown
         };
     }
 
     Result WINHttpLibClientImpl::Put(const char *path, const Headers &headers, const std::string &body,
                                      const char *content_type) {
 
-        // TODO: implement
+        int statusCode = 0;
+        std::string resp;
+
+        Headers ctiHeaders = headers;
+        ctiHeaders.insert({"Content-Type", content_type});
+
+        int res = doHttpWinRequest(
+                "PUT", path, ctiHeaders, &simpleStatusCodeReader, &statusCode,
+                &stringDataReader, &resp, body.c_str(), body.size()
+        );
+
+        if (res != 0) {
+            std::cerr << "Error Put HTTP request with WIN API " << res << std::endl;
+        }
+
         return {
-                std::make_unique<Response>(0, ""),
-                Error::Success
+                std::make_unique<Response>(statusCode, resp),
+                (res == 0) ? Error::Success : Error::Unknown
         };
     }
 
     void WINHttpLibClientImpl::enable_server_certificate_verification(bool b) {
-        // TODO: implement
+        // TODO: test it
+        serverVerify = b;
     }
 
     WINHttpLibClientImpl::WINHttpLibClientImpl(const std::string &endpoint) {
