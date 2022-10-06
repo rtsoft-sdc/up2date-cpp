@@ -35,6 +35,8 @@ namespace ddi {
     const char *EXECUTION_SCHEDULED = "scheduled";
     const char *EXECUTION_REJECTED = "rejected";
     const char *EXECUTION_RESUMED = "resumed";
+    const char *EXECUTION_DOWNLOAD = "download";
+    const char *EXECUTION_DOWNLOADED = "downloaded";
 
     std::string Response::executionToString(const Execution &exec) {
         switch (exec) {
@@ -50,6 +52,10 @@ namespace ddi {
                 return EXECUTION_REJECTED;
             case RESUMED:
                 return EXECUTION_RESUMED;
+            case DOWNLOAD:
+                return EXECUTION_DOWNLOAD;
+            case DOWNLOADED:
+                return EXECUTION_DOWNLOADED;
         }
         // should not happen
         throw std::exception();

@@ -37,11 +37,12 @@ namespace ddi {
         };
 
         ///\brief Indicates status of the action
-        /// <a href="https://www.eclipse.org/hawkbit/apis/ddi_api/">State Machine Mapping</a>
+        /// <a href="https://github.com/eclipse/hawkbit/blob/3d3481110e5131958d8c2d3292b438eed77332c4/hawkbit-rest/hawkbit-ddi-api/src/main/java/org/eclipse/hawkbit/ddi/json/model/DdiStatus.java#L87">State Machine Mapping</a>
         enum Execution {
             CLOSED, PROCEEDING,
             CANCELED, SCHEDULED,
-            REJECTED, RESUMED
+            REJECTED, RESUMED,
+            DOWNLOAD, DOWNLOADED
         };
 
         // Next methods should not be used by user code (they are not documented).
