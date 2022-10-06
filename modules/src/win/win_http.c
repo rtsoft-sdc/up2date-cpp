@@ -172,7 +172,7 @@ static DWORD do_http_request_mtls_(const struct request_config * config, const s
     DWORD cbKeyBlob = 0;
     LPBYTE pbKeyBlob = NULL;
     HCERTSTORE hMemStore = NULL;
-    PCCERT_CONTEXT ctx = NULL, ctx_ = NULL;
+    PCCERT_CONTEXT ctx_ = NULL;
     HCRYPTPROV hProv = NULL;
     HCRYPTKEY hKey = NULL;
 
@@ -199,11 +199,29 @@ static DWORD do_http_request_mtls_(const struct request_config * config, const s
                                         pbDecryptedData,dwBufferLen);
     HANDLE_ERROR(ctx_);
 
+    LPCSTR lpcKeyName = "RITMSOnlinePKEY";
+    LPWSTR lpwKeyName = L"RITMSOnlinePKEY";
 
-    HANDLE_ERROR(CryptAcquireContextA(&hProv,
-                              NULL, NULL,
-                              PROV_RSA_SCHANNEL,
-                              CRYPT_VERIFYCONTEXT ));
+    if(CryptAcquireContextA(
+            &hProv,
+            lpcKeyName,
+            NULL,
+            PROV_RSA_FULL,
+            0) == 0) {
+
+        DWORD dwLastError = GetLastError();
+        if (dwLastError != NTE_BAD_KEYSET) {
+            dwRetCode = dwLastError;
+            goto clear;
+        }
+
+        HANDLE_ERROR(CryptAcquireContextA(
+                &hProv,
+                lpcKeyName,
+                NULL,
+                PROV_RSA_FULL,
+                CRYPT_NEWKEYSET))
+    }
 
     HANDLE_ERROR(CryptStringToBinaryA(kp->cszKey, kp->dwKeySize, CRYPT_STRING_BASE64HEADER,
                               NULL, &dwBufferLen, NULL, NULL));
@@ -228,41 +246,34 @@ static DWORD do_http_request_mtls_(const struct request_config * config, const s
                                 CRYPT_EXPORTABLE, &hKey))
 
 
-    HANDLE_ERROR(CertSetCertificateContextProperty(ctx_,
-                                                   CERT_KEY_PROV_HANDLE_PROP_ID, 0, hProv));
-
-
-    CRYPT_KEY_PROV_INFO info;
-    info.dwProvType = PROV_RSA_SCHANNEL;
-    info.pwszContainerName = NULL;
-    info.pwszProvName = NULL;
-    info.dwKeySpec = AT_KEYEXCHANGE | AT_SIGNATURE;
-    info.cProvParam = 0;
-    info.rgProvParam = 0;
+    CRYPT_KEY_PROV_INFO kpInfo;
+    ZeroMemory( & kpInfo, sizeof(kpInfo) );
+    kpInfo.dwProvType = PROV_RSA_FULL;
+    kpInfo.pwszContainerName = lpwKeyName;
+    kpInfo.dwKeySpec = AT_KEYEXCHANGE;
+    kpInfo.dwFlags = CERT_SET_KEY_PROV_HANDLE_PROP_ID;
 
     HANDLE_ERROR(CertSetCertificateContextProperty(ctx_,
-                                                   CERT_KEY_PROV_INFO_PROP_ID, 0, &info));
+                                                   CERT_KEY_PROV_INFO_PROP_ID, 0, &kpInfo));
 
 
     HANDLE_ERROR(CertAddCertificateContextToStore(hMemStore,ctx_,
-                                          CERT_STORE_ADD_NEW, &ctx));
+                                                  CERT_STORE_ADD_REPLACE_EXISTING, NULL));
 
 
 
-    dwRetCode = do_http_request_ctx(config, ctx);
+    dwRetCode = do_http_request_ctx(config, ctx_);
 
     clear:
     if (pbDecryptedData) LocalFree(pbDecryptedData);
     if (pbKeyBlob) LocalFree (pbKeyBlob);
 
-    // TODO: check if needed (returned const pointer)
-    if (ctx) CertFreeCertificateContext(ctx);
     if (ctx_) CertFreeCertificateContext(ctx_);
-
-    if (hMemStore) CertCloseStore(hMemStore, CERT_CLOSE_STORE_FORCE_FLAG);
 
     if (hKey) CryptDestroyKey(hKey);
     if (hProv) CryptReleaseContext(hProv, 0);
+
+    if (hMemStore) CertCloseStore(hMemStore, CERT_CLOSE_STORE_FORCE_FLAG);
 
     return dwRetCode;
 }
