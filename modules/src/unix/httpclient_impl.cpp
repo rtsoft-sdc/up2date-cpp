@@ -3,6 +3,7 @@
 namespace httpclient {
 
     Result toHttpLibResult(httplib::Result r) {
+
         Error e = r.error();
         return {
             (e == Error::Success) ? std::make_unique<Response>(r->status, r->body) : nullptr,
@@ -31,6 +32,7 @@ namespace httpclient {
 
     Result HttpLibClientImpl::Post(const char *path, const Headers &headers, const std::string &body,
                                    const char *content_type) {
+
         return toHttpLibResult(cli.Post(path, toHttpLibHeaders(headers), body, content_type));
     }
 
@@ -50,7 +52,8 @@ namespace httpclient {
         client_ = std::make_unique<HttpLibClientImpl>(httplib::Client(endpoint));
     }
 
-    Client::Client(std::string endpoint, std::unique_ptr<mTLSKeyPair> kp) {
+    Client::Client(const std::string& endpoint, std::unique_ptr<mTLSKeyPair> kp) {
+
         BIO *bio_crt = BIO_new(BIO_s_mem());
         BIO_puts(bio_crt, kp->crt.c_str());
         X509 *certificate = PEM_read_bio_X509(bio_crt, nullptr, nullptr, nullptr);
