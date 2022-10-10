@@ -58,14 +58,19 @@ namespace ddi {
         };
     };
 
-    [[noreturn]] void HawkbitCommunicationClient::run() {
+    void HawkbitCommunicationClient::stop() {
+
+        isRunning = false;
+    }
+
+     void HawkbitCommunicationClient::run() {
         if (hawkbitURI.isEmpty()) {
             if (!authErrorHandler)  throw client_initialize_error("endpoint or AuthErrorHandler is not set");
             authErrorHandler->onAuthError(
                     std::make_unique<AuthRestoreHandler_>(this));
         }
 
-        while (true) {
+        while (isRunning) {
             ignoreSleep = false;
             doPoll();
             if (!ignoreSleep && currentSleepTime > 0)
@@ -149,7 +154,6 @@ namespace ddi {
 
         ignoreSleep = req->isIgnoredSleep();
     }
-
 
     // see documentation: https://www.eclipse.org/hawkbit/rest-api/rootcontroller-api-guide/#_post_tenant_controller_v1_controllerid_cancelaction_actionid_feedback
     std::string formatFeedbackPath(uri::URI uri) {
@@ -353,5 +357,4 @@ namespace ddi {
 
         setEndpoint(hawkbitEndpointFrom(hawkbitEndpoint, controllerId, tenant));
     }
-
 }
