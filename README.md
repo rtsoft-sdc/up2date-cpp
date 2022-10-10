@@ -29,21 +29,28 @@ docker run --rm -v "%cd%/client.conf:/opt/client.conf" ghcr.io/rtsoft-gmbh/up2da
 ## BUILDING CUSTOMIZED CLIENT
 
 ```shell   
-git clone https://github.com/rtsoft-gmbh/up2date-cpp.git
+git clone --recurse-submodules https://github.com/rtsoft-gmbh/up2date-cpp.git
 ```
 
 ***Finally use [Visual Studio Code Remote-Containers](README-vscode.md) to build and develop in dedicated pre-configured contanerized environment.*** 
 
 > if you do not use Visual Studio Code environment install dependencies and then run cmake:
 
+> For UNIX systems default http client implementation requires **libssl-dev**. ```apt install libssl-dev```
+
 ```shell 
 cd up2date-cpp 
-[path to vcpkg]/vcpkg install
 mkdir build
-cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=[path to vcpkg]/scripts/buildsystems/vcpkg.cmake
+cmake -B build -S . -DBUILD_EXAMPLES=ON
 cd build && make
 ```
-> ([see also vcpkg documentation](https://github.com/microsoft/vcpkg#getting-started))
+
+### CMake flags
+
+**BUILD_EXAMPLES** - *(default OFF)* build example projects (up2date_client, ritms_ott, standalone_client, ritms_auth).
+**U2D_HTTP_CLIENT_IMPL** - *(default AUTO)* detects and apply http client implementation. Can be AUTO, WIN, UNIX, CUSTOM.   
+>NOTE: If **U2D_HTTP_CLIENT_IMPL=CUSTOM**  cmake flags *CUSTOM_HTTP_CLIENT_SRC*, *CUSTOM_HTTP_CLIENT_LINK_LIBRARIES*, *CUSTOM_HTTP_CLIENT_INCLUDE_DIRS* should be carefully set.
+For usage check include scripts: [example flag usage](modules/src/unix/CMakeLists.txt), [build script](modules/CMakeLists.txt)
 
 ## CONFIGURATION
 
