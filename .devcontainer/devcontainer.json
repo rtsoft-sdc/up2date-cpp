@@ -17,8 +17,6 @@
 	"extensions": [
 		"ms-vscode.cpptools",
 		"ms-vscode.cmake-tools",
-
-		// Doxygen
 		"bbenoist.Doxygen",
 		"cschlosser.doxdocgen",
 		"betwo.vscode-doxygen-runner"
@@ -33,6 +31,8 @@
 	// Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
 	"remoteUser": "vscode",
 	"features": {
-		"docker-in-docker": "latest"
+		"ghcr.io/devcontainers/features/docker-in-docker:1": {
+			"version": "latest"
+		}
 	}
 }
