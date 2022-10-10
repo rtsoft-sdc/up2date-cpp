@@ -8,8 +8,6 @@ add_library(sub::dps ALIAS ${PROJECT_NAME})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX)
 
-find_package(RapidJSON CONFIG REQUIRED)
-
 target_include_directories( ${PROJECT_NAME}
         PUBLIC ${PROJECT_SOURCE_DIR}/include
 )

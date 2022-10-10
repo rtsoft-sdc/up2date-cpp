@@ -8,7 +8,7 @@ namespace uri {
 
     bool URI::hasPath() {
         return !path.empty();
-    };
+    }
 
     bool URI::hasQuery() {
         return !query.empty();

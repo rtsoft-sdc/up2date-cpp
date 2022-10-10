@@ -1,26 +1,29 @@
-project (modules LANGUAGES CXX)
+project(modules)
 
-# Add a library with the above sources
-file(GLOB SOURCES src/*.cpp)
+add_library("interface-${PROJECT_NAME}" INTERFACE)
+target_include_directories("interface-${PROJECT_NAME}" INTERFACE "${PROJECT_SOURCE_DIR}/include")
 
-add_library(${PROJECT_NAME} ${SOURCES})
-add_library(sub::modules ALIAS ${PROJECT_NAME})
+if(DEFINED _HTTP_CLI_BUILD_UNIX)
+    include(src/unix/CMakeLists.txt)
+elseif(DEFINED _HTTP_CLI_BUILD_WIN)
+    include(src/win/CMakeLists.txt)
+else()
+    message("Building custom HTTP client")
+endif()
 
+
+add_library(${PROJECT_NAME} ${CUSTOM_HTTP_CLIENT_SRC})
+add_library(sub::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX)
 
+if(DEFINED CUSTOM_HTTP_CLIENT_INCLUDE_DIRS)
+    target_include_directories(${PROJECT_NAME}
+            PRIVATE
+            ${CUSTOM_HTTP_CLIENT_INCLUDE_DIRS})
+endif()
 
-target_include_directories( ${PROJECT_NAME}
-        PUBLIC ${PROJECT_SOURCE_DIR}/include
-)
-find_package(Threads REQUIRED)
-find_package(OpenSSL  COMPONENTS Crypto SSL REQUIRED)
-
-target_link_libraries( ${PROJECT_NAME} PRIVATE
-        sub::modules
-        Threads::Threads
-        $<$<PLATFORM_ID:Windows>:ws2_32>
-        $<$<PLATFORM_ID:Windows>:crypt32>
-        $<$<PLATFORM_ID:Windows>:cryptui>
-        OpenSSL::SSL
-        OpenSSL::Crypto
-)
+target_link_libraries(${PROJECT_NAME}
+        PUBLIC
+        "interface-${PROJECT_NAME}"
+        PRIVATE
+        ${CUSTOM_HTTP_CLIENT_LINK_LIBRARIES})

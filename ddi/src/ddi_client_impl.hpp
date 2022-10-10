@@ -12,7 +12,7 @@
 
 namespace ddi {
 
-    struct PollingData_;
+    class PollingData_;
 
     class HawkbitCommunicationClient : public DownloadProvider, public Client, public AuthRestoreHandler {
     protected:
@@ -59,7 +59,7 @@ namespace ddi {
 
     public:
 
-        [[noreturn]] virtual void run() override;
+        [[noreturn]] void run() override;
 
         void downloadTo(uri::URI uri, const std::string &path) override;
 

@@ -1,4 +1,4 @@
-project(standalone_cli)
+project(standalone_client)
 
 add_executable(${PROJECT_NAME} main.cpp)
 

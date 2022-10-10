@@ -25,7 +25,7 @@ namespace ddi {
         static std::unique_ptr<PollingData_> fromString(const std::string &);
 
     private:
-        int sleepTime;
+        int sleepTime{};;
         Actions_ action;
         uri::URI followURI;
     };

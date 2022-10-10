@@ -12,8 +12,6 @@ target_include_directories( ${PROJECT_NAME}
     PUBLIC ${PROJECT_SOURCE_DIR}/include
 )
 
-find_package(RapidJSON CONFIG REQUIRED)
-
 target_link_libraries( ${PROJECT_NAME} PRIVATE
         sub::modules
         rapidjson
