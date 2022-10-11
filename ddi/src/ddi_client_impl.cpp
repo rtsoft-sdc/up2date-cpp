@@ -70,9 +70,15 @@ namespace ddi {
                     std::make_unique<AuthRestoreHandler_>(this));
         }
 
-        while (isRunning) {
+        isRunning = true;
+
+        while (true) {
             ignoreSleep = false;
             doPoll();
+
+            if (!isRunning)
+                break;
+
             if (!ignoreSleep && currentSleepTime > 0)
                 std::this_thread::sleep_for(std::chrono::milliseconds(currentSleepTime));
         }

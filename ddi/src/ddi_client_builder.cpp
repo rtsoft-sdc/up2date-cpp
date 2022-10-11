@@ -99,7 +99,7 @@ namespace ddi {
         cli->defaultHeaders = defaultHeaders;
         cli->serverCertificateVerify = verifyServerCertificate;
         cli->authErrorHandler = authErrorHandler;
-        cli->isRunning = true;
+        cli->isRunning = false;
 
         if (authVariant == AuthorizeVariants::M_TLS_KEYPAIR) {
             cli->setTLS(crt, key);
