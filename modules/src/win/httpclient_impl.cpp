@@ -77,7 +77,7 @@ namespace httpclient {
         config.szHost = host.c_str();
 
         config.szHeaders = headersEncoded.c_str();
-        config.dwHeadersSize = headersEncoded.size();
+        config.dwHeadersSize = (DWORD)headersEncoded.size();
 
         config.pvBody = (LPVOID) body;
         config.dwBodySize = bodySize;
@@ -94,9 +94,9 @@ namespace httpclient {
         if (kp) {
             struct mtls_keypair keypair{};
             keypair.cszKey = kp->key.c_str();
-            keypair.dwKeySize = kp->key.size();
+            keypair.dwKeySize = (DWORD)kp->key.size();
             keypair.cszCrt = kp->crt.c_str();
-            keypair.dwCrtSize = kp->crt.size();
+            keypair.dwCrtSize = (DWORD)kp->crt.size();
 
             return (int) do_http_request_mtls(&config, &keypair);
         }
@@ -158,7 +158,7 @@ namespace httpclient {
 
         int res = doHttpWinRequest(
                 "POST", path, ctiHeaders, &simpleStatusCodeReader, &statusCode,
-                &stringDataReader, &resp, body.c_str(), body.size()
+                &stringDataReader, &resp, body.c_str(), (DWORD)body.size()
         );
 
         if (res != 0) {
@@ -182,7 +182,7 @@ namespace httpclient {
 
         int res = doHttpWinRequest(
                 "PUT", path, ctiHeaders, &simpleStatusCodeReader, &statusCode,
-                &stringDataReader, &resp, body.c_str(), body.size()
+                &stringDataReader, &resp, body.c_str(), (DWORD)body.size()
         );
 
         if (res != 0) {

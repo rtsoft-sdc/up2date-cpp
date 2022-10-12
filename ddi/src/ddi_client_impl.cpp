@@ -114,7 +114,9 @@ namespace ddi {
 
         rapidjson::Value details(rapidjson::kArrayType);
         for (const auto &val: response->getDetails()) {
-            details.PushBack(rapidjson::Value{}.SetString(val.c_str(), val.length(), document.GetAllocator()),
+            details.PushBack(rapidjson::Value{}.SetString(val.c_str(),
+                                                          static_cast<rapidjson::SizeType>(val.length()),
+                                                          document.GetAllocator()),
                              document.GetAllocator());
         }
         status.AddMember("details", details, document.GetAllocator());
