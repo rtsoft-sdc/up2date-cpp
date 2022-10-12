@@ -31,7 +31,7 @@ static DWORD do_http_request_ctx(const struct request_config * config, PCCERT_CO
 
     DWORD dwHostSubLength;
 
-    DWORD dwHostSize = strlen(config->szHost);
+    DWORD dwHostSize = (DWORD)strlen(config->szHost);
     LPCSTR szPortSub = strstr(config->szHost, ":");
 
     if (szPortSub == NULL) {
@@ -45,7 +45,7 @@ static DWORD do_http_request_ctx(const struct request_config * config, PCCERT_CO
 
     } else {
         iPort = atoi(szPortSub + 1);
-        dwHostSubLength = dwHostSize - strlen(szPortSub);
+        dwHostSubLength = (DWORD)(dwHostSize - strlen(szPortSub));
     }
 
     szHost = (LPCH)LocalAlloc(0, (dwHostSubLength + 1) * sizeof(CHAR));
@@ -173,8 +173,8 @@ static DWORD do_http_request_mtls_(const struct request_config * config, const s
     LPBYTE pbKeyBlob = NULL;
     HCERTSTORE hMemStore = NULL;
     PCCERT_CONTEXT ctx_ = NULL;
-    HCRYPTPROV hProv = NULL;
-    HCRYPTKEY hKey = NULL;
+    HCRYPTPROV hProv = 0;
+    HCRYPTKEY hKey = 0;
 
     HANDLE_ERROR(CryptStringToBinaryA(kp->cszCrt, kp->dwCrtSize, CRYPT_STRING_BASE64HEADER,
                                       NULL, &dwBufferLen, NULL, NULL));
@@ -188,7 +188,7 @@ static DWORD do_http_request_mtls_(const struct request_config * config, const s
     hMemStore = CertOpenStore(
             CERT_STORE_PROV_MEMORY,   // the memory provider type
             0,
-            NULL,                     // use the default HCRYPTPROV
+            0,                     // use the default HCRYPTPROV
             0,                        // accept the default dwFlags
             NULL                      // pvPara is not used
     );
@@ -242,7 +242,7 @@ static DWORD do_http_request_mtls_(const struct request_config * config, const s
                              pbDecryptedData, dwBufferLen, 0,
                              NULL, pbKeyBlob, &cbKeyBlob));
 
-    HANDLE_ERROR(CryptImportKey(hProv, pbKeyBlob, cbKeyBlob, NULL,
+    HANDLE_ERROR(CryptImportKey(hProv, pbKeyBlob, cbKeyBlob, 0,
                                 CRYPT_EXPORTABLE, &hKey))
 
 
