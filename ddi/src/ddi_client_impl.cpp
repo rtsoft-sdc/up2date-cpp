@@ -72,15 +72,15 @@ namespace ddi {
 
         isRunning = true;
 
-        while (true) {
+        while (isRunning) {
             ignoreSleep = false;
             doPoll();
             if (!ignoreSleep && currentSleepTime > 0)
                 // reactive react if stop called in another thread
                 // sleep time in seconds
                 for (int i=0; i<currentSleepTime/1000; ++i) {
-                    if (!isRunning) return;
-                    std::this_thread::sleep_for(std::chrono::milliseconds (1000));
+                    if (!isRunning) break;
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
                 }
         }
     }
