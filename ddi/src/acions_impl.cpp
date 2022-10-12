@@ -1,3 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <vector>
 #include <string>
 
@@ -5,6 +7,7 @@
 #include "rapidjson/document.h"
 #include "ddi_client_impl.hpp"
 #include "utils.hpp"
+
 
 namespace ddi {
     int CancelAction_::getId() {
