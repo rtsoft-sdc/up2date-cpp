@@ -16,6 +16,11 @@ namespace ddi {
         */
         virtual void run() = 0;
 
+        /*! Call this method to safe exit from polling process
+         *  Polling stops after full iteration done
+         */
+        virtual void stop() = 0;
+
         virtual ~Client() = default;
     };
 

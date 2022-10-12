@@ -27,6 +27,7 @@ namespace ddi {
         int currentSleepTime;
 
         bool ignoreSleep;
+        bool isRunning;
 
         bool serverCertificateVerify = true;
 
@@ -59,7 +60,9 @@ namespace ddi {
 
     public:
 
-        [[noreturn]] void run() override;
+        void run() override;
+
+        void stop() override;
 
         void downloadTo(uri::URI uri, const std::string &path) override;
 
