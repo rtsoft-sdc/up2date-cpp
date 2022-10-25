@@ -1,4 +1,5 @@
 [![ghcr.io](https://github.com/rtsoft-gmbh/up2date-cpp/actions/workflows/ci.yaml/badge.svg)](https://github.com/rtsoft-gmbh/up2date-cpp/actions/workflows/ci.yaml)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/rtsoft-gmbh/up2date-cpp/badge)](https://api.securityscorecards.dev/projects/github.com/rtsoft-gmbh/up2date-cpp)
 
 # UP2DATE CLIENT C++ Library
 
