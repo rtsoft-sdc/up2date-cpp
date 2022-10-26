@@ -5,7 +5,7 @@
 
 ## INTRODUCTION
 
-[RITMS UP2DATE](https://ritms.online) is a cloud ready solution for unified software and firmware management. Use this for implementing lifecycle management for the full stack of drivers and firmware of connected devices.
+[RITMS UP2DATE](https://up2date.ritms.online) is a cloud ready solution for unified software and firmware management. Use this for implementing lifecycle management for the full stack of drivers and firmware of connected devices.
 
 RITMS UP2DATE is based on open and worldwide adopted building blocks, the most important is [Eclipse Hawkbit](https://www.eclipse.org/ddi/) which provides open and flexible Direct Device Integration (DDI) API and Management API.
 
