@@ -270,10 +270,19 @@ namespace ddi {
         }
     }
 
+    std::string formatDownloadPath(uri::URI &downloadUri) {
+        auto path = downloadUri.getPath();
+        if (downloadUri.hasQuery()) {
+            path += "?" + downloadUri.getQuery();
+        }
+
+        return path;
+    }
+
     void HawkbitCommunicationClient::downloadTo(uri::URI downloadURI, const std::string &path) {
         std::ofstream file(path, std::ios::binary);
         retryHandler(downloadURI, [&](httpclient::Client &cli) {
-            return cli.Get(downloadURI.getPath().c_str(), defaultHeaders,
+            return cli.Get(formatDownloadPath(downloadURI).c_str(), defaultHeaders,
                            [](const httpclient::Response &r) {
                                checkHttpCode(r.status, HTTP_OK);
                                return true;
@@ -289,14 +298,14 @@ namespace ddi {
 
     std::string HawkbitCommunicationClient::getBody(uri::URI downloadURI) {
         return retryHandler(downloadURI, [&](httpclient::Client &cli) {
-            return cli.Get(downloadURI.getPath().c_str(), defaultHeaders);
+            return cli.Get(formatDownloadPath(downloadURI).c_str(), defaultHeaders);
         })->body;
     }
 
     void HawkbitCommunicationClient::downloadWithReceiver(uri::URI downloadURI,
                                                           std::function<bool(const char *, size_t)> func) {
         retryHandler(downloadURI, [&](httpclient::Client &cli) {
-            return cli.Get(downloadURI.getPath().c_str(), defaultHeaders,
+            return cli.Get(formatDownloadPath(downloadURI).c_str(), defaultHeaders,
                            [](const httpclient::Response &r) {
                                checkHttpCode(r.status, HTTP_OK);
                                return true;

@@ -91,16 +91,26 @@ namespace ddi {
                 const rapidjson::Value &artifact = *itr_a;
                 if (!artifact.HasMember("filename") || !artifact.HasMember("hashes") || !artifact.HasMember("size")
                     || !artifact.HasMember("_links") || !artifact["hashes"].HasMember("sha256")
-                    || !artifact["hashes"].HasMember("sha1") || !artifact["hashes"].HasMember("md5")
-                    || !artifact["_links"].HasMember("download-http")) {
+                    || !artifact["hashes"].HasMember("sha1") || !artifact["hashes"].HasMember("md5")){
                     throw unexpected_payload();
                 }
+
+                auto useDownload = true;
+                if (!artifact["_links"].HasMember("download")) {
+                    if (!artifact["_links"].HasMember("download-http")) {
+                        throw unexpected_payload();
+                    }
+                    useDownload = false;
+                }
+
                 Hashes hashesR;
                 auto artifactR = new Artifact_();
                 auto artifactPtr = std::shared_ptr<Artifact>(artifactR);
                 artifactR->filename = artifact["filename"].GetString();
                 artifactR->fileSize = artifact["size"].GetInt();
-                artifactR->downloadURI = parseHrefObject(artifact["_links"]["download-http"]);
+
+                artifactR->downloadURI = parseHrefObject(artifact["_links"][
+                    (useDownload) ? "download" : "download-http"]);
                 hashesR.md5 = artifact["hashes"]["md5"].GetString();
                 hashesR.sha1 = artifact["hashes"]["sha1"].GetString();
                 hashesR.sha256 = artifact["hashes"]["sha256"].GetString();
