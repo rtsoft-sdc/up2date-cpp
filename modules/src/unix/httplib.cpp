@@ -5526,19 +5526,22 @@ SSLClient::SSLClient(const std::string &host, int port,
       ctx_ = nullptr;
       return;
     }
+
     for (const auto cert : chainCerts) {
-        if (SSL_CTX_add_extra_chain_cert(ctx_, cert) != 1) {
-            SSL_CTX_free(ctx_);
+        auto code = SSL_CTX_add_extra_chain_cert(ctx_, cert);
+        X509_free(cert);
+        if (code != 1) {
             ctx_ = nullptr;
             return;
         }
     }
-
   }
 }
 
 SSLClient::~SSLClient() {
-  if (ctx_) { SSL_CTX_free(ctx_); }
+  if (ctx_) {
+      SSL_CTX_free(ctx_);
+  }
   // Make sure to shut down SSL since shutdown_ssl will resolve to the
   // base function rather than the derived function once we get to the
   // base class destructor, and won't free the SSL (causing a leak).

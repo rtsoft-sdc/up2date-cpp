@@ -72,9 +72,16 @@ namespace httpclient {
         BIO *bio_key = BIO_new(BIO_s_mem());
         BIO_puts(bio_key, kp->key.c_str());
         EVP_PKEY *key = PEM_read_bio_PrivateKey(bio_key, nullptr, nullptr, nullptr);
+
         BIO_free(bio_key);
 
         client_ = std::make_unique<HttpLibClientImpl>(
                 httplib::Client(endpoint, certificate, key, chainCerts));
+
+        X509_free(certificate);
+        EVP_PKEY_free(key);
+        for (auto chainCert : chainCerts) {
+            X509_free(chainCert);
+        }
     }
 }
