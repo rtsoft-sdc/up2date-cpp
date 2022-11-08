@@ -5510,7 +5510,7 @@ SSLClient::SSLClient(const std::string &host, int port,
 }
 
 SSLClient::SSLClient(const std::string &host, int port,
-                            X509 *client_cert, EVP_PKEY *client_key)
+                            X509 *client_cert, EVP_PKEY *client_key,  const std::vector<X509*>& chainCerts)
     : ClientImpl(host, port) {
   ctx_ = SSL_CTX_new(TLS_client_method());
 
@@ -5524,7 +5524,16 @@ SSLClient::SSLClient(const std::string &host, int port,
         SSL_CTX_use_PrivateKey(ctx_, client_key) != 1) {
       SSL_CTX_free(ctx_);
       ctx_ = nullptr;
+      return;
     }
+    for (const auto cert : chainCerts) {
+        if (SSL_CTX_add_extra_chain_cert(ctx_, cert) != 1) {
+            SSL_CTX_free(ctx_);
+            ctx_ = nullptr;
+            return;
+        }
+    }
+
   }
 }
 
@@ -5909,7 +5918,8 @@ Client::Client(const std::string &scheme_host_port,
   }
 }
 #ifdef CPPHTTPLIB_OPENSSL_SUPPORT
-Client::Client(const std::string &scheme_host_port, X509 *client_cert, EVP_PKEY *client_key){
+Client::Client(const std::string &scheme_host_port, X509 *client_cert, EVP_PKEY *client_key,
+               const std::vector<X509*>& chainCerts){
     const static std::regex re(
             R"((?:([a-z]+):\/\/)?(?:\[([\d:]+)\]|([^:/?#]+))(?::(\d+))?)");
 
@@ -5927,7 +5937,7 @@ Client::Client(const std::string &scheme_host_port, X509 *client_cert, EVP_PKEY 
         auto port_str = m[4].str();
         auto port = !port_str.empty() ? std::stoi(port_str) : 443;
         cli_ = detail::make_unique<SSLClient>(host.c_str(), port,
-                                              client_cert, client_key);
+                                              client_cert, client_key, chainCerts);
         is_ssl_ = true;
     }
 }

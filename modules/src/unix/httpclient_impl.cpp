@@ -57,13 +57,24 @@ namespace httpclient {
         BIO *bio_crt = BIO_new(BIO_s_mem());
         BIO_puts(bio_crt, kp->crt.c_str());
         X509 *certificate = PEM_read_bio_X509(bio_crt, nullptr, nullptr, nullptr);
+
+        std::vector<X509*> chainCerts;
+
+        while (true) {
+            auto chainCert = PEM_read_bio_X509(bio_crt, nullptr, nullptr, nullptr);
+            if (!chainCert)
+                break;
+            chainCerts.push_back(chainCert);
+        }
+
         BIO_free(bio_crt);
 
         BIO *bio_key = BIO_new(BIO_s_mem());
         BIO_puts(bio_key, kp->key.c_str());
         EVP_PKEY *key = PEM_read_bio_PrivateKey(bio_key, nullptr, nullptr, nullptr);
         BIO_free(bio_key);
+
         client_ = std::make_unique<HttpLibClientImpl>(
-                httplib::Client(endpoint, certificate, key));
+                httplib::Client(endpoint, certificate, key, chainCerts));
     }
 }
