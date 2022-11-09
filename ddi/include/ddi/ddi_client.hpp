@@ -51,7 +51,7 @@ namespace ddi {
          *   https://my.hwb.n/default/controller/v1/my-controller
          * @note Default value for tenant will be inherited for all child classes
          */
-        virtual void setEndpoint(std::string &hawkbitEndpoint,
+        virtual void setEndpoint(const std::string &hawkbitEndpoint,
                                  const std::string &controllerId, const std::string &tenant = "default") = 0;
 
         ///\brief Set deviceToken. (Security Token) <a href="https://www.eclipse.org/hawkbit/concepts/authentication/"> docs </a>
