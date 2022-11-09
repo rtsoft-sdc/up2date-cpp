@@ -75,13 +75,8 @@ namespace httpclient {
 
         BIO_free(bio_key);
 
+        // X509 values will be freed in Client..
         client_ = std::make_unique<HttpLibClientImpl>(
                 httplib::Client(endpoint, certificate, key, chainCerts));
-
-        X509_free(certificate);
-        EVP_PKEY_free(key);
-        for (auto chainCert : chainCerts) {
-            X509_free(chainCert);
-        }
     }
 }

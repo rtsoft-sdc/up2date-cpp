@@ -5519,22 +5519,27 @@ SSLClient::SSLClient(const std::string &host, int port,
                   host_components_.emplace_back(std::string(b, e));
                 });
 
+
   if (client_cert != nullptr && client_key != nullptr) {
     if (SSL_CTX_use_certificate(ctx_, client_cert) != 1 ||
         SSL_CTX_use_PrivateKey(ctx_, client_key) != 1) {
       SSL_CTX_free(ctx_);
       ctx_ = nullptr;
-      return;
+      goto clear;
     }
 
     for (const auto cert : chainCerts) {
         auto code = SSL_CTX_add_extra_chain_cert(ctx_, cert);
-        X509_free(cert);
         if (code != 1) {
+            SSL_CTX_free(ctx_);
             ctx_ = nullptr;
-            return;
+            goto clear;
         }
     }
+
+   clear:
+      X509_free(client_cert);
+      EVP_PKEY_free(client_key);
   }
 }
 
