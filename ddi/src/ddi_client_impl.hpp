@@ -74,7 +74,7 @@ namespace ddi {
 
         void setEndpoint(const std::string &endpoint) override;
 
-        void setEndpoint(std::string &hawkbitEndpoint,
+        void setEndpoint(const std::string &hawkbitEndpoint,
                          const std::string &controllerId, const std::string &tenant = "default") override;
 
         void setDeviceToken(const std::string &string) override;

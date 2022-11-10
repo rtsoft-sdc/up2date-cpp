@@ -2,7 +2,7 @@
 #define __WIN_HTTP_CLI_IMPL
 
 #include <Windows.h>
-#include <WinInet.h>
+#include <winhttp.h>
 
 
 #ifdef __cplusplus
