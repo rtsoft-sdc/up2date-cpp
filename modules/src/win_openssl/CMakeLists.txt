@@ -1,5 +1,5 @@
 # Add a library with the above sources
-message("Building internal UNIX HTTP client")
+message("Building WIN(OPENSSL) HTTP client")
 
 file(GLOB
         SOURCES
@@ -20,4 +20,7 @@ endif()
 
 set(CUSTOM_HTTP_CLIENT_LINK_LIBRARIES
         Threads::Threads
+        ws2_32
+        crypt32
+        cryptui
         ${_OPENSSL_COMPONENTS})
