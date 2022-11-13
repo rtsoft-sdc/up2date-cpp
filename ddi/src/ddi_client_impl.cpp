@@ -51,7 +51,7 @@ namespace ddi {
             cli->setGatewayToken(token);
         }
 
-        void setEndpoint(std::string &hawkbitEndpoint, const std::string &controllerId,
+        void setEndpoint(const std::string &hawkbitEndpoint, const std::string &controllerId,
                          const std::string &tenant = "default") override {
 
             cli->setEndpoint(hawkbitEndpoint, controllerId, tenant);
@@ -370,7 +370,7 @@ namespace ddi {
         mTLSKeypair.key = "";
     }
 
-    void HawkbitCommunicationClient::setEndpoint(std::string &hawkbitEndpoint, const std::string &controllerId,
+    void HawkbitCommunicationClient::setEndpoint(const std::string &hawkbitEndpoint, const std::string &controllerId,
                                                  const std::string &tenant) {
 
         setEndpoint(hawkbitEndpointFrom(hawkbitEndpoint, controllerId, tenant));

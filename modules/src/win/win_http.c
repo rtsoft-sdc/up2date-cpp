@@ -1,23 +1,30 @@
 #include "win_http.h"
+#include "converters.h"
 #include <string.h>
 #include <stdio.h>
 
 
-#define DEFAULT_DOWNLOAD_BUF_SIZE 2048
-
-
-static DWORD do_http_request_ctx(const struct request_config * config, PCCERT_CONTEXT ctx){
+static DWORD do_http_request_ctx(const struct request_config *config, PCCERT_CONTEXT ctx){
     DWORD code = 0;
+
     HINTERNET hSession = NULL;
     HINTERNET hConnect = NULL;
     HINTERNET hRequest = NULL;
-    LPCH szHost = NULL;
 
-    hSession = InternetOpenA(
-            "UP2Date Cli/1.0", // User-Agent
-            INTERNET_OPEN_TYPE_PRECONFIG,
-            NULL,
-            NULL,
+    LPWSTR lpwHostAddress = NULL;
+    BOOL bIsHttps;
+    INT iPort;
+
+    LPWSTR lpwMethod = NULL;
+    LPWSTR lpwPath = NULL;
+
+    LPWSTR lpwHeaders = NULL;
+
+    hSession = WinHttpOpen(
+            L"UP2Date Cli/1.0", // User-Agent
+            WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
+            WINHTTP_NO_PROXY_NAME,
+            WINHTTP_NO_PROXY_BYPASS,
             0);
 
     if (!hSession) {
@@ -25,132 +32,147 @@ static DWORD do_http_request_ctx(const struct request_config * config, PCCERT_CO
         goto clean;
     }
 
+    extractDataFromHost(config->szHost, config->szScheme,
+                        &lpwHostAddress,
+                        &iPort,
+                        &bIsHttps);
 
-    INT iPort;
-    BOOL bIsHttps = 0;
 
-    DWORD dwHostSubLength;
-
-    DWORD dwHostSize = (DWORD)strlen(config->szHost);
-    LPCSTR szPortSub = strstr(config->szHost, ":");
-
-    if (szPortSub == NULL) {
-        if (strcmp("https", config->szScheme) == 0) {
-            iPort = INTERNET_DEFAULT_HTTPS_PORT;
-            bIsHttps = TRUE;
-        } else {
-            iPort = INTERNET_DEFAULT_HTTP_PORT;
-        }
-        dwHostSubLength = dwHostSize;
-
-    } else {
-        iPort = atoi(szPortSub + 1);
-        dwHostSubLength = (DWORD)(dwHostSize - strlen(szPortSub));
-    }
-
-    szHost = (LPCH)LocalAlloc(0, (dwHostSubLength + 1) * sizeof(CHAR));
-    memcpy(szHost, config->szHost, dwHostSubLength);
-    szHost[dwHostSubLength] = '\0';
-
-    hConnect = InternetConnectA(
-            hSession,
-            szHost,
-            iPort, // THIS
-            NULL,
-            NULL,
-            INTERNET_SERVICE_HTTP,
-            0,
-            0);
+    hConnect = WinHttpConnect(hSession,
+                              lpwHostAddress,
+                              iPort,
+                              0);
 
     if (!hConnect) {
         code = GetLastError();
         goto clean;
     }
 
-    DWORD flags = INTERNET_FLAG_RELOAD;
+    lpwMethod = convertToWCHAR(config->szMethod, NULL);
+    lpwPath = convertToWCHAR(config->szPath, NULL);
+
+    DWORD flags = WINHTTP_FLAG_REFRESH;
     if (bIsHttps){
-        flags |= INTERNET_FLAG_SECURE ;
-        if (!config->bVerifyServerCrt) {
-            flags |= INTERNET_FLAG_IGNORE_CERT_CN_INVALID | INTERNET_FLAG_IGNORE_CERT_CN_INVALID;
-        }
+        flags |= WINHTTP_FLAG_SECURE;
     }
 
-    hRequest = HttpOpenRequestA(
+    const wchar_t *att[] = { L"*/*", NULL };
+    hRequest = WinHttpOpenRequest(
             hConnect,
-            config->szMethod,
-            config->szPath,
+            lpwMethod,
+            lpwPath,
             NULL,
-            "",
-            NULL,
-            flags, // THIS
-            0);
+            WINHTTP_NO_REFERER,
+            att,
+            flags);
 
-    if (ctx) {
-        if (!InternetSetOptionA(hRequest, INTERNET_OPTION_CLIENT_CERT_CONTEXT,
-                                (LPVOID)ctx, sizeof(CERT_CONTEXT))) {
+    if (!hRequest) {
+        code = GetLastError();
+        goto clean;
+    }
+
+    if (bIsHttps) {
+        if (!WinHttpSetOption(hRequest, WINHTTP_OPTION_CLIENT_CERT_CONTEXT,
+                              (ctx) ? (LPVOID) ctx : WINHTTP_NO_CLIENT_CERT_CONTEXT,
+                              (ctx) ? sizeof(CERT_CONTEXT) : 0)) {
             code = GetLastError();
             goto clean;
         }
     }
 
-    if(!HttpSendRequestA(hRequest, config->szHeaders, config->dwHeadersSize,
-                    config->pvBody, config->dwBodySize)) {
+    if (!config->bVerifyServerCrt) {
+        DWORD dwFlags = SECURITY_FLAG_IGNORE_UNKNOWN_CA |
+                SECURITY_FLAG_IGNORE_CERT_WRONG_USAGE |
+                SECURITY_FLAG_IGNORE_CERT_CN_INVALID |
+                SECURITY_FLAG_IGNORE_CERT_DATE_INVALID;
+
+        if (!WinHttpSetOption(hRequest, WINHTTP_OPTION_SECURITY_FLAGS,
+                              &dwFlags, sizeof(dwFlags))) {
+            code = GetLastError();
+            goto clean;
+        }
+    }
+
+    int headersLength = 0;
+    lpwHeaders = convertToWCHAR(config->szHeaders, &headersLength);
+
+    if(!WinHttpSendRequest(
+            hRequest,
+            lpwHeaders,
+            -1L,
+            config->pvBody,
+            config->dwBodySize,
+            config->dwBodySize,
+            0)) {
 
         code = GetLastError();
         goto clean;
     }
 
-    CHAR szStatusCode[32] = { 0 };
-    DWORD dwStatusCodeSize = sizeof(szStatusCode) / sizeof(CHAR);
+    if (!WinHttpReceiveResponse( hRequest, NULL)) {
+        code = GetLastError();
+        goto clean;
+    }
 
-    INT statusCode;
-    if (HttpQueryInfoA(hRequest, HTTP_QUERY_STATUS_CODE,
-                      szStatusCode, &dwStatusCodeSize, NULL)) {
-        statusCode = atoi(szStatusCode);
-    } else {
+    DWORD dwStatusCode = 0;
+    DWORD dwSize = sizeof(dwStatusCode);
+
+    if (!WinHttpQueryHeaders(hRequest,
+                            WINHTTP_QUERY_STATUS_CODE | WINHTTP_QUERY_FLAG_NUMBER,
+                            WINHTTP_HEADER_NAME_BY_INDEX,
+                            &dwStatusCode, &dwSize, WINHTTP_NO_HEADER_INDEX)) {
+
         code = ERROR_API_UNAVAILABLE;
         goto clean;
     }
 
-    if (!config->pfRetCodeHandler(statusCode, config->pvRetCodeHandlerCtx)) {
+    if (!config->pfRetCodeHandler((INT)dwStatusCode, config->pvRetCodeHandlerCtx)) {
         code = ERROR_CANCELLED;
         goto clean;
     }
 
-    DWORD dwFileSize = DEFAULT_DOWNLOAD_BUF_SIZE;
-    LPCH buffer = (LPCH)LocalAlloc(0, dwFileSize * sizeof(CHAR));
+    while(1) {
+        // Check for available data.
+        DWORD dwReqSize = 0;
+        DWORD dwActSize = 0;
+        BOOL bError = FALSE;
 
-    while (1) {
-        DWORD dwBytesRead;
-        BOOL bRead;
-
-        bRead = InternetReadFile(
-                hRequest,
-                buffer,
-                dwFileSize,
-                &dwBytesRead);
-
-        if (dwBytesRead == 0 ) break;
-
-        if (!bRead) {
+        if (!WinHttpQueryDataAvailable( hRequest, &dwReqSize)) {
             code = GetLastError();
             break;
         }
 
-        if (!config->pfContentReceiver(
-                buffer, dwBytesRead, config->pvContentReceiverCtx)) {
-            code = ERROR_CANCELLED;
-            break;
+        if (dwReqSize == 0) break;
+        LPCH buffer = (LPCH)LocalAlloc(0, (dwReqSize+1) * sizeof(CHAR));
+
+        ZeroMemory(buffer, dwReqSize+1);
+
+        if (WinHttpReadData( hRequest, (LPVOID)buffer,
+                              dwSize, &dwActSize)){
+            if (!config->pfContentReceiver(
+                    buffer, dwActSize, config->pvContentReceiverCtx)) {
+                code = ERROR_CANCELLED;
+                bError = TRUE;
+            }
+        } else {
+            code = GetLastError();
+            bError = TRUE;
         }
+
+        LocalFree(buffer);
+        if (bError)
+            break;
     }
 
-
-    LocalFree(buffer);
     clean:
-    if (szHost) LocalFree(szHost);
-    if (hRequest) InternetCloseHandle(hRequest);
-    if (hConnect) InternetCloseHandle(hConnect);
-    if (hSession) InternetCloseHandle(hSession);
+    if (lpwHostAddress) LocalFree(lpwHostAddress);
+    if (lpwMethod) LocalFree(lpwMethod);
+    if (lpwPath) LocalFree(lpwPath);
+    if (lpwHeaders) LocalFree(lpwHeaders);
+
+    if (hRequest) WinHttpCloseHandle(hRequest);
+    if (hConnect) WinHttpCloseHandle(hConnect);
+    if (hSession) WinHttpCloseHandle(hSession);
     return code;
 }
 
@@ -165,6 +187,7 @@ DWORD do_http_request(const struct request_config* config) {
                 goto clear;    \
 }}
 
+
 static DWORD do_http_request_mtls_(const struct request_config * config, const struct mtls_keypair* kp) {
     DWORD dwRetCode = 0;
     DWORD dwBufferLen = 0;
@@ -173,27 +196,45 @@ static DWORD do_http_request_mtls_(const struct request_config * config, const s
     LPBYTE pbKeyBlob = NULL;
     HCERTSTORE hMemStore = NULL;
     PCCERT_CONTEXT ctx_ = NULL;
+    PCCERT_CONTEXT ctx__ = NULL;
+    PCCERT_CONTEXT  pCertContext = NULL;
     HCRYPTPROV hProv = 0;
     HCRYPTKEY hKey = 0;
+    DWORD pdwSkip = 0;
 
+    // open local user store
+    hMemStore = CertOpenStore(
+            CERT_STORE_PROV_SYSTEM,   // the memory provider type
+            0,
+            0,                     // use the default HCRYPTPROV
+            CERT_SYSTEM_STORE_CURRENT_USER, // accept the default dwFlags
+            L"RTS_Store"                      // pvPara is not used
+    );
+    HANDLE_ERROR(hMemStore);
+
+    // clear certificate store (remove old unused certs)
+    PCCERT_CONTEXT  pDupCertContext = NULL;
+    while((pCertContext = CertEnumCertificatesInStore(
+            hMemStore,
+            pCertContext)))
+    {
+        pDupCertContext = CertDuplicateCertificateContext(
+                pCertContext);
+
+        HANDLE_ERROR(CertDeleteCertificateFromStore(pDupCertContext))
+        pCertContext = CertEnumCertificatesInStore(
+                hMemStore,
+                pCertContext);
+    }
+
+    // read certificate
     HANDLE_ERROR(CryptStringToBinaryA(kp->cszCrt, kp->dwCrtSize, CRYPT_STRING_BASE64HEADER,
-                                      NULL, &dwBufferLen, NULL, NULL));
-
+                                      NULL, &dwBufferLen, &pdwSkip, NULL));
 
     pbDecryptedData = LocalAlloc(0, dwBufferLen);
 
     HANDLE_ERROR(CryptStringToBinaryA(kp->cszCrt, kp->dwCrtSize, CRYPT_STRING_BASE64HEADER,
-                              pbDecryptedData, &dwBufferLen, NULL, NULL));
-
-    hMemStore = CertOpenStore(
-            CERT_STORE_PROV_MEMORY,   // the memory provider type
-            0,
-            0,                     // use the default HCRYPTPROV
-            0,                        // accept the default dwFlags
-            NULL                      // pvPara is not used
-    );
-
-    HANDLE_ERROR(hMemStore);
+                                      pbDecryptedData, &dwBufferLen, NULL, NULL));
 
     ctx_ = CertCreateCertificateContext(X509_ASN_ENCODING, 
                                         pbDecryptedData,dwBufferLen);
@@ -214,6 +255,23 @@ static DWORD do_http_request_mtls_(const struct request_config * config, const s
             dwRetCode = dwLastError;
             goto clear;
         }
+
+        HANDLE_ERROR(CryptAcquireContextA(
+                &hProv,
+                lpcKeyName,
+                NULL,
+                PROV_RSA_FULL,
+                CRYPT_NEWKEYSET))
+    } else {
+        // recreate container to remove old keys...
+        CryptReleaseContext(hProv, 0);
+
+        HANDLE_ERROR(CryptAcquireContextA(
+                &hProv,
+                lpcKeyName,
+                NULL,
+                PROV_RSA_FULL,
+                CRYPT_DELETEKEYSET))
 
         HANDLE_ERROR(CryptAcquireContextA(
                 &hProv,
@@ -257,19 +315,40 @@ static DWORD do_http_request_mtls_(const struct request_config * config, const s
                                                    CERT_KEY_PROV_INFO_PROP_ID, 0, &kpInfo));
 
 
+    // load additional chain certificates
+    LPCSTR pos = kp->cszCrt;
+    while ((pos=strstr(pos + pdwSkip + 1, "-----BEGIN CERTIFICATE-----"))) {
+        LocalFree(pbDecryptedData);
+
+        HANDLE_ERROR(CryptStringToBinaryA(pos, strlen(pos), CRYPT_STRING_BASE64HEADER,
+                                          NULL, &dwBufferLen, &pdwSkip, NULL));
+
+        pbDecryptedData = LocalAlloc(0, dwBufferLen);
+
+        HANDLE_ERROR(CryptStringToBinaryA(pos, strlen(pos), CRYPT_STRING_BASE64HEADER,
+                                          pbDecryptedData, &dwBufferLen, NULL, NULL));
+
+        ctx__ = CertCreateCertificateContext(X509_ASN_ENCODING,
+                                            pbDecryptedData,dwBufferLen);
+        HANDLE_ERROR(ctx__);
+        HANDLE_ERROR(CertAddCertificateContextToStore(hMemStore,ctx__,
+                                                      CERT_STORE_ADD_REPLACE_EXISTING, NULL));
+        CertFreeCertificateContext(ctx__);
+        ctx__ = NULL;
+    }
+
+
     HANDLE_ERROR(CertAddCertificateContextToStore(hMemStore,ctx_,
                                                   CERT_STORE_ADD_REPLACE_EXISTING, NULL));
-
-
 
     dwRetCode = do_http_request_ctx(config, ctx_);
 
     clear:
     if (pbDecryptedData) LocalFree(pbDecryptedData);
     if (pbKeyBlob) LocalFree (pbKeyBlob);
-
+    if (pCertContext) CertFreeCertificateContext(pCertContext);
     if (ctx_) CertFreeCertificateContext(ctx_);
-
+    if (ctx__) CertFreeCertificateContext(ctx__);
     if (hKey) CryptDestroyKey(hKey);
     if (hProv) CryptReleaseContext(hProv, 0);
 

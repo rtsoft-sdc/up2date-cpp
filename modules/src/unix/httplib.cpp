@@ -5510,7 +5510,7 @@ SSLClient::SSLClient(const std::string &host, int port,
 }
 
 SSLClient::SSLClient(const std::string &host, int port,
-                            X509 *client_cert, EVP_PKEY *client_key)
+                            X509 *client_cert, EVP_PKEY *client_key,  const std::vector<X509*>& chainCerts)
     : ClientImpl(host, port) {
   ctx_ = SSL_CTX_new(TLS_client_method());
 
@@ -5519,17 +5519,34 @@ SSLClient::SSLClient(const std::string &host, int port,
                   host_components_.emplace_back(std::string(b, e));
                 });
 
+
   if (client_cert != nullptr && client_key != nullptr) {
     if (SSL_CTX_use_certificate(ctx_, client_cert) != 1 ||
         SSL_CTX_use_PrivateKey(ctx_, client_key) != 1) {
       SSL_CTX_free(ctx_);
       ctx_ = nullptr;
+      goto clear;
     }
+
+    for (const auto cert : chainCerts) {
+        auto code = SSL_CTX_add_extra_chain_cert(ctx_, cert);
+        if (code != 1) {
+            SSL_CTX_free(ctx_);
+            ctx_ = nullptr;
+            goto clear;
+        }
+    }
+
+   clear:
+      X509_free(client_cert);
+      EVP_PKEY_free(client_key);
   }
 }
 
 SSLClient::~SSLClient() {
-  if (ctx_) { SSL_CTX_free(ctx_); }
+  if (ctx_) {
+      SSL_CTX_free(ctx_);
+  }
   // Make sure to shut down SSL since shutdown_ssl will resolve to the
   // base function rather than the derived function once we get to the
   // base class destructor, and won't free the SSL (causing a leak).
@@ -5909,7 +5926,8 @@ Client::Client(const std::string &scheme_host_port,
   }
 }
 #ifdef CPPHTTPLIB_OPENSSL_SUPPORT
-Client::Client(const std::string &scheme_host_port, X509 *client_cert, EVP_PKEY *client_key){
+Client::Client(const std::string &scheme_host_port, X509 *client_cert, EVP_PKEY *client_key,
+               const std::vector<X509*>& chainCerts){
     const static std::regex re(
             R"((?:([a-z]+):\/\/)?(?:\[([\d:]+)\]|([^:/?#]+))(?::(\d+))?)");
 
@@ -5927,7 +5945,7 @@ Client::Client(const std::string &scheme_host_port, X509 *client_cert, EVP_PKEY 
         auto port_str = m[4].str();
         auto port = !port_str.empty() ? std::stoi(port_str) : 443;
         cli_ = detail::make_unique<SSLClient>(host.c_str(), port,
-                                              client_cert, client_key);
+                                              client_cert, client_key, chainCerts);
         is_ssl_ = true;
     }
 }

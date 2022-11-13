@@ -1165,7 +1165,7 @@ public:
 
 #ifdef CPPHTTPLIB_OPENSSL_SUPPORT
   explicit Client(const std::string &scheme_host_port,
-                  X509 *client_cert, EVP_PKEY *client_key);
+                  X509 *client_cert, EVP_PKEY *client_key, const std::vector<X509*>& chainCerts);
 #endif
 
   // HTTP only interface
@@ -1407,7 +1407,7 @@ public:
                      const std::string &client_key_path);
 
   explicit SSLClient(const std::string &host, int port, X509 *client_cert,
-                     EVP_PKEY *client_key);
+                     EVP_PKEY *client_key, const std::vector<X509*>& chainCerts);
 
   ~SSLClient() override;
 
