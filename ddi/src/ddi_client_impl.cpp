@@ -82,7 +82,7 @@ namespace ddi {
                 // reactive react if stop called in another thread
                 // sleep time in seconds
                 for (int i=0; i<currentSleepTime/1000; ++i) {
-                    // check ignore sleep here too. It can be set outside in requestToPoll function
+                    // check pollRequested flag every second. It can be set outside in requestToPoll function
                     if (!isRunning || pollRequested) break;
                     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
                 }
