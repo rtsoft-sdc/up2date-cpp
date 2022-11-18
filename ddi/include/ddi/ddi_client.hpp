@@ -21,6 +21,12 @@ namespace ddi {
          */
         virtual void stop() = 0;
 
+        /*! Call this method to request client do Poll request as soon as it can
+         * If client is polling now, request will be ignored.
+         * Normally client should execute Poll request in 1 second
+         */
+        virtual void requestToPoll() = 0;
+
         virtual ~Client() = default;
     };
 

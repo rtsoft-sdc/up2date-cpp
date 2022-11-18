@@ -28,6 +28,7 @@ namespace ddi {
 
         bool ignoreSleep;
         bool isRunning;
+        bool pollRequested;
 
         bool serverCertificateVerify = true;
 
@@ -63,6 +64,8 @@ namespace ddi {
         void run() override;
 
         void stop() override;
+
+        void requestToPoll() override;
 
         void downloadTo(uri::URI uri, const std::string &path) override;
 
