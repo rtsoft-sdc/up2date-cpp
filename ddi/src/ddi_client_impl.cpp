@@ -75,14 +75,22 @@ namespace ddi {
         while (isRunning) {
             ignoreSleep = false;
             doPoll();
+            // set up poll requested to false only after polling done.
+            // if somebody ask poll when client was polling, just ignore it...
+            pollRequested = false;
             if (!ignoreSleep && currentSleepTime > 0)
                 // reactive react if stop called in another thread
                 // sleep time in seconds
                 for (int i=0; i<currentSleepTime/1000; ++i) {
-                    if (!isRunning) break;
+                    // check ignore sleep here too. It can be set outside in requestToPoll function
+                    if (!isRunning || pollRequested) break;
                     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
                 }
         }
+    }
+
+    void HawkbitCommunicationClient::requestToPoll() {
+        pollRequested = true;
     }
 
     httpclient::Client HawkbitCommunicationClient::newHttpClient(uri::URI &hostEndpoint) const {
