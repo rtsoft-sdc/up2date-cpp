@@ -28,15 +28,19 @@ public:
 };
 
 class Handler : public EventHandler {
+
+    std::string installCmd;
+
 public:
+
+    explicit Handler(const std::string installCmd_ = "") : installCmd(installCmd_) {}
+
     std::unique_ptr<ConfigResponse> onConfigRequest() override {
         std::cout << ">> Sending Config Data" << std::endl;
 
         return ConfigResponseBuilder::newInstance()
-                ->addData("some", "config1")
-                ->addData("some1", "new config")
-                ->addData("some2", "RITMS123")
-                ->addData("some3", "TES_TEST_TEST")
+                ->addData("Client", "Up2date-cpp example")
+                ->addData("Install command", installCmd)
                 ->setIgnoreSleep()
                 ->build();
     }
@@ -51,6 +55,7 @@ public:
         builder->addDetail("Printed deployment base info");
         std::cout << " + CHUNKS:" << std::endl;
 
+        auto response = Response::SUCCESS;
         for (const auto &chunk: dp->getChunks()) {
             std::cout << "  part: " << chunk->getPart() << std::endl;
             std::cout << "  name: " << chunk->getName() << " version: " << chunk->getVersion() << std::endl;
@@ -65,14 +70,36 @@ public:
                 artifact->downloadTo(artifact->getFilename());
                 builder->addDetail("Downloaded " + artifact->getFilename());
                 std::cout << "[OK]" << std::endl;
+                if (dp->getUpdateType() != "skip") {
+                    if (installCmd == "") {
+                        builder->addDetail("Installation skipped - no install command is defined.");
+                    } else {
+                        int result;
+                        auto cmd = installCmd + " " + artifact->getFilename();
+                        std::cout << "  .. executing command '" + cmd + "'...";
+                        auto output = execCommand(cmd, result);
+                        if (result == 0) {
+                            builder->addDetail("Installed " + artifact->getFilename() + " \n" + output);
+                            std::cout << "[OK]" << std::endl;
+                        } else {
+                            auto err_msg = "Installation command failed: " + cmd + " \n" + output;
+                            builder->addDetail(err_msg);
+                            std::cout << "[FAIL]" << std::endl << err_msg << std::endl ;
+                            response = Response::FAILURE;
+                            break;
+                        }
+                    }
+                }
             }
+            if (response != Response::SUCCESS) 
+                break;
             std::cout << " + ---------------------------" << std::endl;
         }
 
         return builder->addDetail("Work done. Sending response")
                 ->setIgnoreSleep()
                 ->setExecution(Response::CLOSED)
-                ->setFinished(Response::SUCCESS)
+                ->setFinished(response)
                 ->setResponseDeliveryListener(
                         std::shared_ptr<ResponseDeliveryListener>(new DeploymentBaseFeedbackDeliveryListener()))
                 ->build();
@@ -94,13 +121,39 @@ public:
                 ->build();
     }
 
+    std::string execCommand(const std::string cmd, int& out_exitStatus) {
+        out_exitStatus = 0;
+        auto pPipe = ::popen(cmd.c_str(), "r");
+        if (pPipe == nullptr)
+        {
+            throw std::runtime_error("Cannot open pipe");
+        }
+
+        std::array<char, 256> buffer;
+
+        std::string result;
+
+        while (!std::feof(pPipe))
+        {
+            auto bytes = std::fread(buffer.data(), 1, buffer.size(), pPipe);
+            result.append(buffer.data(), bytes);
+        }
+
+        auto rc = ::pclose(pPipe);
+
+        if (WIFEXITED(rc))
+        {
+            out_exitStatus = WEXITSTATUS(rc);
+        }
+
+        return result;
+    }
+
     void onNoActions() override {
         std::cout << "No actions from hawkBit" << std::endl;
     }
 
     ~Handler() override = default;
-
-    Handler() = default;
 };
 
 char *getEnvOrExit(const char *name) {
