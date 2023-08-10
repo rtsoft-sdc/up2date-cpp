@@ -6,6 +6,7 @@
 const char *AUTH_CERT_PATH_ENV_NAME = "CERT_PATH";
 const char *PROVISIONING_ENDPOINT_ENV_NAME = "PROVISIONING_ENDPOINT";
 const char *X_APIG_TOKEN_ENV_NAME = "X_APIG_TOKEN";
+const char *INSTALL_CMD_ENV_NAME = "INSTALL_CMD";
 
 using namespace ritms::dps;
 using namespace ddi;
@@ -46,6 +47,7 @@ int main() {
     auto provisioningEndpoint = getEnvOrExit(PROVISIONING_ENDPOINT_ENV_NAME);
     // special variable for cloud
     auto xApigToken = getEnvOrExit(X_APIG_TOKEN_ENV_NAME);
+    auto installCmd = std::getenv(INSTALL_CMD_ENV_NAME);
 
     std::ifstream t((std::string(clientCertificatePath)));
     if (!t.is_open()) {
@@ -63,10 +65,11 @@ int main() {
 
     auto authErrorHandler = std::shared_ptr<AuthErrorHandler>(new DPSInfoReloadHandler(std::move(dpsClient)));
 
+    auto handler = (installCmd == nullptr) ? new Handler() : new Handler(installCmd);
 
     auto builder = DDIClientBuilder::newInstance();
     builder->setAuthErrorHandler(authErrorHandler)
-        ->setEventHandler(std::shared_ptr<EventHandler>(new Handler()))
+        ->setEventHandler(std::shared_ptr<EventHandler>(handler))
         ->build()
         ->run();
 }
